@@ -1,109 +1,102 @@
-'use client';
+'use client'
 
-import { useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
+import { useEffect, useRef } from 'react'
+import { useTheme } from 'next-themes'
 
 interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
+  x: number
+  y: number
+  speed: number
+  size: number
+  opacity: number
+  char: string
 }
 
+const CHARS = ['0', '1', '·', '•', '○', '□']
+
 export function AnimatedBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { theme } = useTheme();
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { theme, resolvedTheme } = useTheme()
+  const isDark = (resolvedTheme || theme) === 'dark'
+  const particlesRef = useRef<Particle[]>([])
+  const animationRef = useRef<number | null>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
     // Check reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
 
-    let animationId: number;
-    let particles: Particle[] = [];
+    // Set canvas size
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
+    // Initialize particles - capped for performance
+    const particleCount = Math.min(
+      Math.floor((window.innerWidth * window.innerHeight) / 15000),
+      80 // Max 80 particles for performance
+    )
+    particlesRef.current = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      speed: 0.3 + Math.random() * 0.5, // Slow
+      size: 10 + Math.random() * 6,
+      opacity: 0.15 + Math.random() * 0.20, // 15-35% opacity
+      char: CHARS[Math.floor(Math.random() * CHARS.length)]
+    }))
 
-    const createParticles = () => {
-      particles = [];
-      // PERFORMANCE: Cap at 50 particles max (was unlimited ~138)
-      const particleCount = Math.min(
-        Math.floor((canvas.width * canvas.height) / 15000),
-        50
-      );
+    // Animation loop
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 2 + 0.5,
-          speedX: (Math.random() - 0.5) * 0.3,
-          speedY: (Math.random() - 0.5) * 0.3,
-          opacity: Math.random() * 0.5 + 0.1,
-        });
-      }
-    };
+      // Subtle color based on theme
+      const baseColor = isDark ? '139, 92, 246' : '109, 40, 217' // violet-500 / violet-700
 
-    const drawParticles = () => {
-      const isDark = theme === 'dark';
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((particle) => {
-        // Update position
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-
-        // Wrap around screen
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
-
+      particlesRef.current.forEach((particle) => {
         // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = isDark
-          ? `rgba(139, 92, 246, ${particle.opacity})`
-          : `rgba(99, 102, 241, ${particle.opacity * 0.7})`;
-        ctx.fill();
+        ctx.font = `${particle.size}px monospace`
+        ctx.fillStyle = `rgba(${baseColor}, ${particle.opacity})`
+        ctx.fillText(particle.char, particle.x, particle.y)
 
-        // REMOVED: Connection lines (was O(n²) - major perf issue)
-      });
+        // Move particle down
+        particle.y += particle.speed
 
-      animationId = requestAnimationFrame(drawParticles);
-    };
+        // Reset if off screen
+        if (particle.y > canvas.height + 20) {
+          particle.y = -20
+          particle.x = Math.random() * canvas.width
+          particle.char = CHARS[Math.floor(Math.random() * CHARS.length)]
+        }
+      })
 
-    resize();
-    createParticles();
-    drawParticles();
+      animationRef.current = requestAnimationFrame(animate)
+    }
 
-    window.addEventListener('resize', () => {
-      resize();
-      createParticles();
-    });
+    animate()
 
     return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resize);
-    };
-  }, [theme]);
+      window.removeEventListener('resize', resizeCanvas)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [isDark])
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-40"
+      className="fixed inset-0 pointer-events-none z-0"
+      style={{ opacity: 1 }}
       aria-hidden="true"
     />
-  );
+  )
 }
