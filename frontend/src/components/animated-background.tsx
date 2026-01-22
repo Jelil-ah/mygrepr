@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 
 interface Particle {
@@ -15,18 +15,8 @@ interface Particle {
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const particlesRef = useRef<Particle[]>([]);
-  const animationRef = useRef<number | null>(null);
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -37,7 +27,8 @@ export function AnimatedBackground() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
-    const isDark = theme === 'dark';
+    let animationId: number;
+    let particles: Particle[] = [];
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -45,26 +36,30 @@ export function AnimatedBackground() {
     };
 
     const createParticles = () => {
-      // PERFORMANCE: Cap at 50 particles max
+      particles = [];
+      // PERFORMANCE: Cap at 50 particles max (was unlimited ~138)
       const particleCount = Math.min(
-        Math.floor((canvas.width * canvas.height) / 25000),
+        Math.floor((canvas.width * canvas.height) / 15000),
         50
       );
 
-      particlesRef.current = Array.from({ length: particleCount }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 1,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.4 + 0.1,
-      }));
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speedX: (Math.random() - 0.5) * 0.3,
+          speedY: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.5 + 0.1,
+        });
+      }
     };
 
     const drawParticles = () => {
+      const isDark = theme === 'dark';
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particlesRef.current.forEach((particle) => {
+      particles.forEach((particle) => {
         // Update position
         particle.x += particle.speedX;
         particle.y += particle.speedY;
@@ -75,38 +70,34 @@ export function AnimatedBackground() {
         if (particle.y < 0) particle.y = canvas.height;
         if (particle.y > canvas.height) particle.y = 0;
 
-        // Draw particle (simple circle, NO connection lines)
+        // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = isDark
           ? `rgba(139, 92, 246, ${particle.opacity})`
           : `rgba(99, 102, 241, ${particle.opacity * 0.7})`;
         ctx.fill();
+
+        // REMOVED: Connection lines (was O(n²) - major perf issue)
       });
 
-      animationRef.current = requestAnimationFrame(drawParticles);
+      animationId = requestAnimationFrame(drawParticles);
     };
 
     resize();
     createParticles();
     drawParticles();
 
-    const handleResize = () => {
+    window.addEventListener('resize', () => {
       resize();
       createParticles();
-    };
-
-    window.addEventListener('resize', handleResize);
+    });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resize);
     };
-  }, [theme, mounted]);
-
-  if (!mounted) return null;
+  }, [theme]);
 
   return (
     <canvas
