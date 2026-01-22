@@ -40,7 +40,13 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Scroll progress bar
   const { scrollYProgress } = useScroll();
@@ -68,7 +74,8 @@ export function Navigation() {
     }
   }, [isScrolled, isMobileMenuOpen]);
 
-  const isDark = theme === 'dark';
+  // Only check theme after mounting to prevent hydration mismatch
+  const isDark = mounted && theme === 'dark';
 
   return (
     <motion.header
