@@ -36,5 +36,6 @@ frontend/.env.local
 *.log
 PARTY_MODE_ANALYSIS.md
 
-# Frontend - keep local only
-frontend/
+# Frontend build
+frontend/.next/
+frontend/node_modules/
