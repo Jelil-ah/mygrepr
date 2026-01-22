@@ -3,10 +3,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+import { cn, isPostNew, getDataFreshness } from '@/lib/utils';
 import { Post, CATEGORY_COLORS } from '@/types/post';
 import { getETFInsights } from '@/lib/nocodb';
-import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Flame, Award, Users, Sparkles } from 'lucide-react';
+import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Flame, Award, Users, Sparkles, Clock } from 'lucide-react';
 import { TopTendances } from '@/components/dashboard/top-tendances';
 import { ETFComparison } from '@/components/dashboard/etf-comparison';
 import { PostDetail } from '@/components/dashboard/post-detail';
@@ -44,6 +44,9 @@ export function DashboardPage({ posts }: DashboardPageProps) {
     const favorites = getFavorites();
     setFavoritePosts(new Set(favorites.posts));
   }, []);
+
+  // Data freshness
+  const freshness = useMemo(() => getDataFreshness(posts), [posts]);
 
   const handleToggleFavorite = (e: React.MouseEvent, redditId: string) => {
     e.stopPropagation(); // Prevent opening post detail
@@ -203,6 +206,19 @@ export function DashboardPage({ posts }: DashboardPageProps) {
           >
             Vue d'ensemble des conseils financiers Reddit
           </p>
+          {/* Freshness indicator */}
+          <div className={cn(
+            'flex items-center gap-2 mt-2 text-xs',
+            freshness.hoursAgo < 24 ? 'text-green-500' : freshness.hoursAgo < 72 ? 'text-amber-500' : 'text-slate-500'
+          )}>
+            <Clock className="w-3 h-3" />
+            <span>{freshness.label}</span>
+            {freshness.hoursAgo < 24 && (
+              <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-medium">
+                Frais
+              </span>
+            )}
+          </div>
         </motion.div>
 
         {/* Stats Grid */}
@@ -510,6 +526,15 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                         <span className="text-xs text-muted-foreground">
                           r/{post.subreddit}
                         </span>
+                        {isPostNew(post.created_utc) && (
+                          <>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="flex items-center gap-1 text-xs text-amber-500 font-medium">
+                              <Sparkles className="w-3 h-3" />
+                              Nouveau
+                            </span>
+                          </>
+                        )}
                       </div>
                       <h4 className="font-medium line-clamp-1 group-hover:text-primary transition-colors pr-8">
                         {post.title}

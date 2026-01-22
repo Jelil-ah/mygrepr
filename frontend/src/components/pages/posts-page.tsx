@@ -3,10 +3,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+import { cn, isPostNew, getPostLanguage, getDataFreshness } from '@/lib/utils';
 import { Post, CATEGORIES, CATEGORY_COLORS } from '@/types/post';
-import { Search, X, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, ArrowUp, Calendar, Filter, LayoutGrid, List } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/utils';
+import { Search, X, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, ArrowUp, Calendar, Filter, LayoutGrid, List, Globe, Clock, Sparkles } from 'lucide-react';
 
 interface PostsPageProps {
   posts: Post[];
@@ -20,9 +19,13 @@ export function PostsPage({ posts }: PostsPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubreddits, setSelectedSubreddits] = useState<string[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'fr' | 'en'>('all');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Data freshness
+  const freshness = useMemo(() => getDataFreshness(posts), [posts]);
 
   // Category stats
   const categoryStats = useMemo(() => {
@@ -64,9 +67,12 @@ export function PostsPage({ posts }: PostsPageProps) {
       const matchesSubreddit =
         selectedSubreddits.length === 0 || selectedSubreddits.includes(p.subreddit || '');
 
-      return matchesSearch && matchesCategory && matchesSubreddit;
+      const matchesLanguage =
+        selectedLanguage === 'all' || getPostLanguage(p.subreddit) === selectedLanguage;
+
+      return matchesSearch && matchesCategory && matchesSubreddit && matchesLanguage;
     });
-  }, [posts, searchQuery, selectedCategories, selectedSubreddits]);
+  }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
 
   // Navigation
   const currentIndex = selectedPost
@@ -100,10 +106,11 @@ export function PostsPage({ posts }: PostsPageProps) {
   const clearFilters = () => {
     setSelectedCategories([]);
     setSelectedSubreddits([]);
+    setSelectedLanguage('all');
     setSearchQuery('');
   };
 
-  const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || searchQuery;
+  const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || selectedLanguage !== 'all' || searchQuery;
 
   return (
     <main className="min-h-screen pt-20 pb-12 px-4">
@@ -130,6 +137,14 @@ export function PostsPage({ posts }: PostsPageProps) {
           >
             Parcourez les conseils financiers de Reddit
           </p>
+          {/* Freshness indicator */}
+          <div className={cn(
+            'flex items-center gap-2 mt-2 text-xs',
+            freshness.hoursAgo < 24 ? 'text-green-500' : 'text-slate-500'
+          )}>
+            <Clock className="w-3 h-3" />
+            <span>{freshness.label}</span>
+          </div>
         </motion.div>
 
         {/* Search + Filters */}
@@ -215,6 +230,48 @@ export function PostsPage({ posts }: PostsPageProps) {
                 )}
               >
                 <List className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Language filter */}
+            <div className="flex rounded-lg overflow-hidden border dark:border-slate-700 border-slate-200">
+              <button
+                onClick={() => setSelectedLanguage('all')}
+                className={cn(
+                  'px-3 py-2 text-xs font-medium',
+                  selectedLanguage === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : isDark
+                      ? 'bg-slate-800/50 text-slate-400'
+                      : 'bg-white text-slate-500'
+                )}
+              >
+                Tous
+              </button>
+              <button
+                onClick={() => setSelectedLanguage('fr')}
+                className={cn(
+                  'px-3 py-2 text-xs font-medium flex items-center gap-1',
+                  selectedLanguage === 'fr'
+                    ? 'bg-primary text-primary-foreground'
+                    : isDark
+                      ? 'bg-slate-800/50 text-slate-400'
+                      : 'bg-white text-slate-500'
+                )}
+              >
+                🇫🇷 FR
+              </button>
+              <button
+                onClick={() => setSelectedLanguage('en')}
+                className={cn(
+                  'px-3 py-2 text-xs font-medium flex items-center gap-1',
+                  selectedLanguage === 'en'
+                    ? 'bg-primary text-primary-foreground'
+                    : isDark
+                      ? 'bg-slate-800/50 text-slate-400'
+                      : 'bg-white text-slate-500'
+                )}
+              >
+                🇬🇧 EN
               </button>
             </div>
           </div>
@@ -358,14 +415,22 @@ export function PostsPage({ posts }: PostsPageProps) {
                 <>
                   {/* Grid View */}
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <div
-                      className={cn(
-                        'px-2 py-0.5 rounded text-xs font-sans',
-                        CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
-                        'text-white'
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          'px-2 py-0.5 rounded text-xs font-sans',
+                          CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
+                          'text-white'
+                        )}
+                      >
+                        {post.category}
+                      </div>
+                      {isPostNew(post.created_utc) && (
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-sans bg-amber-500 text-white">
+                          <Sparkles className="w-3 h-3" />
+                          Nouveau
+                        </div>
                       )}
-                    >
-                      {post.category}
                     </div>
                     <span
                       className={cn(
@@ -423,14 +488,22 @@ export function PostsPage({ posts }: PostsPageProps) {
               ) : (
                 <>
                   {/* List View */}
-                  <div
-                    className={cn(
-                      'px-2 py-0.5 rounded text-xs font-sans shrink-0',
-                      CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
-                      'text-white'
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div
+                      className={cn(
+                        'px-2 py-0.5 rounded text-xs font-sans',
+                        CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
+                        'text-white'
+                      )}
+                    >
+                      {post.category}
+                    </div>
+                    {isPostNew(post.created_utc) && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-sans bg-amber-500 text-white">
+                        <Sparkles className="w-3 h-3" />
+                        New
+                      </div>
                     )}
-                  >
-                    {post.category}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3
