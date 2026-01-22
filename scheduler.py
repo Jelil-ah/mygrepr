@@ -265,6 +265,36 @@ def status():
         print(f"    Current period: {current_period}")
 
 
+def run_loop(target_hour: int = 6):
+    """
+    Run scheduler in a loop, executing daily at target_hour.
+    For PaaS deployment (Dokploy, Railway, etc.)
+    """
+    logger.info(f"Scheduler loop started. Will run daily at {target_hour}:00")
+
+    while True:
+        now = datetime.now()
+
+        # Calculate next run time
+        next_run = now.replace(hour=target_hour, minute=0, second=0, microsecond=0)
+        if now >= next_run:
+            next_run += timedelta(days=1)
+
+        wait_seconds = (next_run - now).total_seconds()
+        logger.info(f"Next run at {next_run.strftime('%Y-%m-%d %H:%M')} (in {wait_seconds/3600:.1f}h)")
+
+        # Run immediately on first start, then wait
+        if load_progress()["last_run"] != now.strftime("%Y-%m-%d"):
+            logger.info("Running scheduler now...")
+            run_scheduler()
+
+        # Sleep until next run (check every hour in case of drift)
+        while datetime.now() < next_run:
+            time.sleep(3600)  # Sleep 1 hour
+
+        run_scheduler()
+
+
 if __name__ == "__main__":
     import sys
 
@@ -276,7 +306,9 @@ if __name__ == "__main__":
             reset_progress()
         elif cmd == "dry":
             run_scheduler(dry_run=True)
+        elif cmd == "loop":
+            run_loop()
         else:
-            print("Usage: python scheduler.py [status|reset|dry]")
+            print("Usage: python scheduler.py [status|reset|dry|loop]")
     else:
-        run_scheduler()
+        run_loop()  # Default: run in loop mode for PaaS
