@@ -40,37 +40,41 @@ export function AnimatedBackground() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    // Initialize particles - capped for performance
+    // Initialize particles - low count for performance
     const particleCount = Math.min(
-      Math.floor((window.innerWidth * window.innerHeight) / 15000),
-      80 // Max 80 particles for performance
+      Math.floor((window.innerWidth * window.innerHeight) / 40000),
+      30
     )
     particlesRef.current = Array.from({ length: particleCount }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      speed: 0.3 + Math.random() * 0.5, // Slow
+      speed: 0.2 + Math.random() * 0.3,
       size: 10 + Math.random() * 6,
-      opacity: 0.15 + Math.random() * 0.20, // 15-35% opacity
+      opacity: 0.1 + Math.random() * 0.15,
       char: CHARS[Math.floor(Math.random() * CHARS.length)]
     }))
 
-    // Animation loop
-    const animate = () => {
+    // Throttled animation loop (~20fps)
+    let lastTime = 0
+    const frameInterval = 50 // 20fps
+    const baseColor = isDark ? '139, 92, 246' : '109, 40, 217'
+
+    const animate = (timestamp: number) => {
+      if (timestamp - lastTime < frameInterval) {
+        animationRef.current = requestAnimationFrame(animate)
+        return
+      }
+      lastTime = timestamp
+
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Subtle color based on theme
-      const baseColor = isDark ? '139, 92, 246' : '109, 40, 217' // violet-500 / violet-700
-
       particlesRef.current.forEach((particle) => {
-        // Draw particle
         ctx.font = `${particle.size}px monospace`
         ctx.fillStyle = `rgba(${baseColor}, ${particle.opacity})`
         ctx.fillText(particle.char, particle.x, particle.y)
 
-        // Move particle down
         particle.y += particle.speed
 
-        // Reset if off screen
         if (particle.y > canvas.height + 20) {
           particle.y = -20
           particle.x = Math.random() * canvas.width
@@ -81,7 +85,7 @@ export function AnimatedBackground() {
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)

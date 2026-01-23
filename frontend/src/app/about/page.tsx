@@ -1,7 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Github, ExternalLink, TrendingUp, Brain, Database, Zap } from 'lucide-react';
 
@@ -48,161 +44,84 @@ const techStack = [
 ];
 
 export default function AboutPage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   return (
-    <main className="min-h-screen pt-20 pb-12 px-4">
+    <main className="min-h-screen bg-background pt-20 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h1
-            className={cn(
-              'text-4xl font-bold mb-4 font-sans',
-              isDark ? 'text-slate-100' : 'text-slate-900'
-            )}
-          >
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4 font-sans text-foreground">
             À propos de Grepr
           </h1>
-          <p
-            className={cn(
-              'text-lg font-sans max-w-2xl mx-auto',
-              isDark ? 'text-slate-400' : 'text-slate-600'
-            )}
-          >
+          <p className="text-lg font-sans max-w-2xl mx-auto text-muted-foreground">
             Agrégateur intelligent de conseils financiers Reddit avec analyse IA
           </p>
-        </motion.div>
+        </div>
 
         {/* What is Grepr */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className={cn(
-            'p-6 rounded-xl border mb-8',
-            isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'
-          )}
-        >
-          <h2
-            className={cn(
-              'text-xl font-semibold mb-4 font-sans',
-              isDark ? 'text-slate-100' : 'text-slate-900'
-            )}
-          >
-            Qu'est-ce que Grepr?
+        <div className="p-6 rounded-xl border mb-8 bg-card border-border">
+          <h2 className="text-xl font-semibold mb-4 font-sans text-foreground">
+            Qu&apos;est-ce que Grepr?
           </h2>
-          <div className={cn('space-y-3 font-sans text-sm', isDark ? 'text-slate-300' : 'text-slate-700')}>
+          <div className="space-y-3 font-sans text-sm text-muted-foreground">
             <p>
               Grepr est un projet personnel qui agrège et analyse les conseils financiers des communautés Reddit francophones et anglophones.
             </p>
             <p>
-              L'objectif est de faciliter la découverte des meilleures pratiques d'investissement, ETF populaires, et stratégies recommandées par la communauté.
+              L&apos;objectif est de faciliter la découverte des meilleures pratiques d&apos;investissement, ETF populaires, et stratégies recommandées par la communauté.
             </p>
             <p>
-              Toutes les analyses sont effectuées localement via LM Studio - aucune donnée n'est envoyée vers des services cloud.
+              Toutes les analyses sont effectuées localement via LM Studio - aucune donnée n&apos;est envoyée vers des services cloud.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
-        >
-          {features.map((feature, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className={cn(
-                  'p-5 rounded-xl border',
-                  isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'
-                )}
+                className="p-5 rounded-xl border bg-card border-border"
               >
                 <div className={cn('p-2 rounded-lg w-fit mb-3', feature.bg)}>
                   <Icon className={cn('h-5 w-5', feature.color)} />
                 </div>
-                <h3
-                  className={cn(
-                    'font-semibold mb-2 font-sans',
-                    isDark ? 'text-slate-100' : 'text-slate-900'
-                  )}
-                >
+                <h3 className="font-semibold mb-2 font-sans text-foreground">
                   {feature.title}
                 </h3>
-                <p
-                  className={cn(
-                    'text-sm font-sans',
-                    isDark ? 'text-slate-400' : 'text-slate-600'
-                  )}
-                >
+                <p className="text-sm font-sans text-muted-foreground">
                   {feature.description}
                 </p>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Tech Stack */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className={cn(
-            'p-6 rounded-xl border mb-8',
-            isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'
-          )}
-        >
-          <h2
-            className={cn(
-              'text-xl font-semibold mb-4 font-sans',
-              isDark ? 'text-slate-100' : 'text-slate-900'
-            )}
-          >
+        <div className="p-6 rounded-xl border mb-8 bg-card border-border">
+          <h2 className="text-xl font-semibold mb-4 font-sans text-foreground">
             Stack Technique
           </h2>
           <div className="flex flex-wrap gap-2">
             {techStack.map((tech) => (
               <span
                 key={tech.name}
-                className={cn(
-                  'px-3 py-1.5 rounded-full text-xs font-sans',
-                  isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'
-                )}
+                className="px-3 py-1.5 rounded-full text-xs font-sans bg-muted text-muted-foreground"
               >
                 {tech.name}
               </span>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Links */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="flex flex-wrap gap-4 justify-center"
-        >
+        <div className="flex flex-wrap gap-4 justify-center">
           <a
             href="https://github.com/Jelil-ah/grepr"
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg border font-sans text-sm transition-colors',
-              isDark
-                ? 'border-slate-700 hover:border-slate-500 text-slate-300'
-                : 'border-slate-200 hover:border-slate-400 text-slate-700'
-            )}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border font-sans text-sm transition-colors border-border hover:border-primary/50 text-muted-foreground"
           >
             <Github className="h-4 w-4" />
             GitHub
@@ -212,30 +131,17 @@ export default function AboutPage() {
             href="https://reddit.com/r/vosfinances"
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg border font-sans text-sm transition-colors',
-              isDark
-                ? 'border-slate-700 hover:border-slate-500 text-slate-300'
-                : 'border-slate-200 hover:border-slate-400 text-slate-700'
-            )}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border font-sans text-sm transition-colors border-border hover:border-primary/50 text-muted-foreground"
           >
             r/vosfinances
             <ExternalLink className="h-3 w-3 opacity-50" />
           </a>
-        </motion.div>
+        </div>
 
         {/* Disclaimer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className={cn(
-            'text-center text-xs font-sans mt-8',
-            isDark ? 'text-slate-500' : 'text-slate-400'
-          )}
-        >
+        <p className="text-center text-xs font-sans mt-8 text-muted-foreground/60">
           Ce projet est à but éducatif. Les informations présentées ne constituent pas des conseils financiers.
-        </motion.p>
+        </p>
       </div>
     </main>
   );
