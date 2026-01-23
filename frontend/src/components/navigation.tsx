@@ -17,7 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: BarChart3 },
   { href: '/posts', label: 'Posts', icon: FileText },
-  { href: '/settings', label: 'Paramètres', icon: Settings },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 // Spring physics for smooth animations
@@ -30,9 +30,9 @@ const SMOOTH_SPRING = {
 
 const MORPH_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 150,
-  damping: 24,
-  mass: 0.6,
+  stiffness: 260,
+  damping: 26,
+  mass: 0.4,
   restDelta: 0.001,
 };
 
@@ -87,16 +87,12 @@ export function Navigation() {
       <motion.nav
         className="flex flex-col pointer-events-auto relative overflow-hidden backdrop-blur-sm border bg-card/95 border-border"
         animate={{
-          width: isScrolled ? 'auto' : '100%',
-          maxWidth: isScrolled ? 500 : 800,
+          width: isScrolled ? 300 : 800,
           borderRadius: isScrolled ? 9999 : 16,
           paddingTop: isScrolled ? 8 : 12,
           paddingBottom: isScrolled ? 8 : 12,
           paddingLeft: isScrolled ? 12 : 16,
           paddingRight: isScrolled ? 12 : 16,
-          boxShadow: isScrolled
-            ? '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
-            : '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         }}
         transition={MORPH_TRANSITION}
       >
@@ -286,7 +282,7 @@ export function Navigation() {
                       )}
                     >
                       <Settings className="w-5 h-5" />
-                      <span className="font-medium">Paramètres</span>
+                      <span className="font-medium">Settings</span>
                     </Link>
                   </li>
                 </ul>

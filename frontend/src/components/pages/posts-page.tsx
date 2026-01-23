@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, isPostNew, getPostLanguage, getDataFreshness } from '@/lib/utils';
 import { Post, CATEGORIES, CATEGORY_COLORS } from '@/types/post';
@@ -20,6 +20,9 @@ export function PostsPage({ posts }: PostsPageProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [visibleCount, setVisibleCount] = useState(30);
+
+  const POSTS_PER_PAGE = 30;
 
   // Data freshness
   const freshness = useMemo(() => getDataFreshness(posts), [posts]);
@@ -71,6 +74,18 @@ export function PostsPage({ posts }: PostsPageProps) {
     });
   }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
 
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(POSTS_PER_PAGE);
+  }, [searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
+
+  // Progressive loading
+  const visiblePosts = useMemo(
+    () => filteredPosts.slice(0, visibleCount),
+    [filteredPosts, visibleCount]
+  );
+  const hasMore = visibleCount < filteredPosts.length;
+
   // Navigation
   const currentIndex = selectedPost
     ? filteredPosts.findIndex((p) => p.Id === selectedPost.Id)
@@ -110,7 +125,12 @@ export function PostsPage({ posts }: PostsPageProps) {
   const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || selectedLanguage !== 'all' || searchQuery;
 
   return (
-    <main className="min-h-screen bg-background pt-20 pb-12 px-4">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="min-h-screen bg-background pt-20 pb-12 px-4"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -348,23 +368,23 @@ export function PostsPage({ posts }: PostsPageProps) {
         <div
           className={cn(
             viewMode === 'grid'
-              ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-4'
-              : 'flex flex-col gap-3'
+              ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3'
+              : 'flex flex-col gap-2'
           )}
         >
-          {filteredPosts.map((post) => (
+          {visiblePosts.map((post) => (
             <div
               key={post.Id}
               onClick={() => setSelectedPost(post)}
               className={cn(
                 'rounded-xl border cursor-pointer transition-all bg-card border-border hover:border-primary/30 hover:-translate-y-0.5',
-                viewMode === 'grid' ? 'p-4' : 'p-4 flex items-center gap-4'
+                viewMode === 'grid' ? 'p-3' : 'p-3 flex items-center gap-4'
               )}
             >
               {viewMode === 'grid' ? (
                 <>
                   {/* Grid View */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <div
                         className={cn(
@@ -394,7 +414,7 @@ export function PostsPage({ posts }: PostsPageProps) {
 
                   <h3
                     className={cn(
-                      'font-medium text-sm mb-2 line-clamp-2 font-sans',
+                      'font-medium text-sm mb-1.5 line-clamp-2 font-sans',
                       'text-foreground'
                     )}
                   >
@@ -404,7 +424,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   {post.summary && (
                     <p
                       className={cn(
-                        'text-xs line-clamp-2 mb-3 font-sans',
+                        'text-xs line-clamp-3 mb-2 font-sans',
                         'text-muted-foreground'
                       )}
                     >
@@ -488,6 +508,18 @@ export function PostsPage({ posts }: PostsPageProps) {
             </div>
           ))}
         </div>
+
+        {/* Load more */}
+        {hasMore && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + POSTS_PER_PAGE)}
+              className="px-6 py-2.5 rounded-lg border font-sans text-sm transition-colors bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            >
+              Afficher plus ({filteredPosts.length - visibleCount} restants)
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Post Detail Modal */}
@@ -502,6 +534,6 @@ export function PostsPage({ posts }: PostsPageProps) {
         currentIndex={currentIndex}
         totalCount={filteredPosts.length}
       />
-    </main>
+    </motion.main>
   );
 }

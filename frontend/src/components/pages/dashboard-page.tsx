@@ -111,7 +111,12 @@ export function DashboardPage({ posts }: DashboardPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-background pt-20 pb-12 px-4">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="min-h-screen bg-background pt-20 pb-12 px-4"
+    >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -388,6 +393,6 @@ export function DashboardPage({ posts }: DashboardPageProps) {
           onClose={() => setSelectedPost(null)}
         />
       </div>
-    </main>
+    </motion.main>
   );
 }

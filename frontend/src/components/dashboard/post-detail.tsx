@@ -86,7 +86,7 @@ export function PostDetail({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 overflow-hidden" showCloseButton={true}>
+      <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 overflow-hidden min-w-0" showCloseButton={true}>
         {/* Navigation header */}
         {(onPrev || onNext) && (
           <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
@@ -118,8 +118,8 @@ export function PostDetail({
           </div>
         )}
 
-        <ScrollArea className="max-h-[calc(85vh-4rem)]">
-          <div className="px-6 py-6">
+        <ScrollArea className="max-h-[calc(85vh-4rem)] min-w-0 w-full">
+          <div className="px-6 py-6 overflow-hidden break-words">
             {/* Header with title and favorite */}
             <DialogHeader className="mb-6">
               <div className="flex items-start justify-between gap-3 pr-8">
@@ -248,7 +248,7 @@ export function PostDetail({
                 <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3 font-medium">
                   Contenu Original
                 </h4>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-all text-foreground/80">
                   {post.selftext}
                 </p>
               </div>
