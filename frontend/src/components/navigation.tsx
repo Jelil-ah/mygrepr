@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
-import { BarChart3, FileText, Settings, User, LogOut, Sun, Moon, Menu, X } from 'lucide-react';
+import { BarChart3, FileText, Settings, User, Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: BarChart3 },
   { href: '/posts', label: 'Posts', icon: FileText },
-  { href: '/settings', label: 'Paramètres', icon: Settings },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 // Spring physics for smooth animations
@@ -30,16 +30,16 @@ const SMOOTH_SPRING = {
 
 const MORPH_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 120,
-  damping: 20,
-  mass: 0.8,
+  stiffness: 260,
+  damping: 26,
+  mass: 0.4,
+  restDelta: 0.001,
 };
 
 export function Navigation() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [profileOpen, setProfileOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -85,17 +85,14 @@ export function Navigation() {
       transition={{ ...SMOOTH_SPRING, delay: 0.1 }}
     >
       <motion.nav
-        layout
-        className={cn(
-          'flex flex-col pointer-events-auto relative overflow-hidden',
-          'backdrop-blur-md border bg-card/90 border-border',
-          isScrolled
-            ? 'rounded-full py-2 px-3 shadow-xl'
-            : 'rounded-2xl py-3 px-4 shadow-lg'
-        )}
+        className="flex flex-col pointer-events-auto relative overflow-hidden backdrop-blur-sm border bg-card/95 border-border"
         animate={{
-          width: isScrolled ? 'auto' : '100%',
-          maxWidth: isScrolled ? 500 : 800,
+          width: isScrolled ? 300 : 800,
+          borderRadius: isScrolled ? 9999 : 16,
+          paddingTop: isScrolled ? 8 : 12,
+          paddingBottom: isScrolled ? 8 : 12,
+          paddingLeft: isScrolled ? 12 : 16,
+          paddingRight: isScrolled ? 12 : 16,
         }}
         transition={MORPH_TRANSITION}
       >
@@ -108,14 +105,14 @@ export function Navigation() {
             {/* Logo */}
             <div
               className={cn(
-                'rounded-lg overflow-hidden ring-2 shrink-0 transition-all duration-500 flex items-center justify-center',
+                'rounded-lg overflow-hidden ring-2 shrink-0 transition-colors flex items-center justify-center',
                 'bg-primary ring-primary/50',
                 isScrolled ? 'w-7 h-7' : 'w-9 h-9'
               )}
             >
               <span
                 className={cn(
-                  'font-bold text-primary-foreground transition-all duration-500',
+                  'font-bold text-primary-foreground transition-colors',
                   isScrolled ? 'text-xs' : 'text-sm'
                 )}
               >
@@ -126,8 +123,7 @@ export function Navigation() {
             {/* Name - fades out when scrolled */}
             <span
               className={cn(
-                'font-bold whitespace-nowrap hidden sm:block ml-3 transition-all duration-500 font-sans',
-                isDark ? 'text-slate-100' : 'text-slate-900',
+                'font-bold whitespace-nowrap hidden sm:block ml-3 transition-colors font-sans text-foreground',
                 isScrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100'
               )}
             >
@@ -138,7 +134,7 @@ export function Navigation() {
           {/* Center: Nav Items */}
           <ul
             className={cn(
-              'hidden md:flex items-center justify-center flex-1 transition-all duration-500',
+              'hidden md:flex items-center justify-center flex-1 transition-colors',
               isScrolled ? 'gap-1' : 'gap-2'
             )}
           >
@@ -154,9 +150,7 @@ export function Navigation() {
                       'relative flex items-center justify-center rounded-full transition-all duration-300 py-2',
                       isActive
                         ? 'text-primary'
-                        : isDark
-                          ? 'text-slate-300 hover:text-primary/80'
-                          : 'text-slate-700 hover:text-primary',
+                        : 'text-muted-foreground hover:text-primary dark:hover:text-primary/80',
                       isScrolled ? 'px-2' : 'px-4'
                     )}
                   >
@@ -164,17 +158,14 @@ export function Navigation() {
                     {isActive && (
                       <motion.div
                         layoutId="nav-active-pill"
-                        className={cn(
-                          'absolute inset-0 rounded-full',
-                          isDark ? 'bg-primary/15' : 'bg-primary/10'
-                        )}
+                        className="absolute inset-0 rounded-full bg-primary/10 dark:bg-primary/15"
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
                     )}
                     <Icon className="w-4 h-4 shrink-0 relative z-10" />
                     <span
                       className={cn(
-                        'text-sm font-medium whitespace-nowrap transition-all duration-500 overflow-hidden relative z-10 font-sans',
+                        'text-sm font-medium whitespace-nowrap transition-colors overflow-hidden relative z-10 font-sans',
                         isScrolled ? 'w-0 opacity-0 ml-0' : 'w-auto opacity-100 ml-2'
                       )}
                     >
@@ -197,7 +188,7 @@ export function Navigation() {
           {/* Right: Theme + Profile + Mobile Menu */}
           <div
             className={cn(
-              'flex items-center transition-all duration-500',
+              'flex items-center transition-colors',
               isScrolled ? 'gap-1' : 'gap-2'
             )}
           >
@@ -205,10 +196,7 @@ export function Navigation() {
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className={cn(
-                'flex items-center justify-center rounded-full transition-all duration-500 shrink-0 hover:scale-110 active:scale-90',
-                isDark
-                  ? 'text-yellow-400 hover:bg-slate-800'
-                  : 'text-slate-600 hover:bg-slate-100',
+                'flex items-center justify-center rounded-full transition-colors shrink-0 hover:scale-110 active:scale-90 text-slate-600 dark:text-yellow-400 hover:bg-accent',
                 isScrolled ? 'w-7 h-7' : 'w-9 h-9'
               )}
             >
@@ -220,88 +208,23 @@ export function Navigation() {
               </motion.div>
             </button>
 
-            {/* Profile Dropdown */}
-            <div className="relative hidden sm:block">
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className={cn(
-                  'flex items-center justify-center rounded-full transition-all duration-500 shrink-0 hover:scale-105 active:scale-95',
-                  'bg-gradient-to-br from-primary to-primary/60',
-                  isScrolled ? 'w-7 h-7' : 'w-9 h-9'
-                )}
-              >
-                <User className="w-4 h-4 text-primary-foreground" />
-              </button>
-
-              <AnimatePresence>
-                {profileOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setProfileOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className={cn(
-                        'absolute right-0 mt-2 w-56 rounded-lg shadow-lg z-50 py-1 border',
-                        isDark
-                          ? 'bg-slate-900 border-slate-700'
-                          : 'bg-white border-slate-200'
-                      )}
-                    >
-                      <div className={cn(
-                        'px-4 py-3 border-b',
-                        isDark ? 'border-slate-700' : 'border-slate-200'
-                      )}>
-                        <p className={cn(
-                          'text-sm font-medium font-sans',
-                          isDark ? 'text-slate-100' : 'text-slate-900'
-                        )}>Jelil</p>
-                        <p className={cn(
-                          'text-xs font-sans',
-                          isDark ? 'text-slate-400' : 'text-slate-500'
-                        )}>jelil@grepr.app</p>
-                      </div>
-                      <Link
-                        href="/settings"
-                        onClick={() => setProfileOpen(false)}
-                        className={cn(
-                          'w-full flex items-center gap-2 px-4 py-2 text-sm font-sans',
-                          isDark
-                            ? 'hover:bg-slate-800 text-slate-300'
-                            : 'hover:bg-slate-100 text-slate-700'
-                        )}
-                      >
-                        <Settings className="h-4 w-4" />
-                        Paramètres
-                      </Link>
-                      <button
-                        className={cn(
-                          'w-full flex items-center gap-2 px-4 py-2 text-sm font-sans text-red-500',
-                          isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'
-                        )}
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Déconnexion
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Profile Link */}
+            <Link
+              href="/settings"
+              className={cn(
+                'hidden sm:flex items-center justify-center rounded-full transition-all shrink-0 hover:scale-105 active:scale-95',
+                'bg-gradient-to-br from-primary to-primary/60',
+                isScrolled ? 'w-7 h-7' : 'w-9 h-9'
+              )}
+            >
+              <User className="w-4 h-4 text-primary-foreground" />
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={cn(
-                'md:hidden flex items-center justify-center rounded-full transition-all duration-500 shrink-0 active:scale-90',
-                isDark
-                  ? 'text-slate-300 hover:bg-slate-800'
-                  : 'text-slate-700 hover:bg-slate-100',
+                'md:hidden flex items-center justify-center rounded-full transition-colors shrink-0 active:scale-90 text-muted-foreground hover:bg-accent',
                 isScrolled ? 'w-7 h-7' : 'w-9 h-9'
               )}
             >
@@ -321,10 +244,7 @@ export function Navigation() {
               className="md:hidden overflow-hidden"
             >
               <div
-                className={cn(
-                  'pt-4 pb-2 border-t mt-3',
-                  isDark ? 'border-slate-700' : 'border-slate-200'
-                )}
+                className="pt-4 pb-2 border-t mt-3 border-border"
               >
                 <ul className="flex flex-col gap-1">
                   {NAV_ITEMS.map((item) => {
@@ -339,12 +259,8 @@ export function Navigation() {
                           className={cn(
                             'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-sans',
                             isActive
-                              ? isDark
-                                ? 'bg-primary/10 text-primary'
-                                : 'bg-primary/10 text-primary'
-                              : isDark
-                                ? 'text-slate-300 hover:bg-slate-800'
-                                : 'text-slate-700 hover:bg-slate-100'
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-accent'
                           )}
                         >
                           <Icon className="w-5 h-5" />
@@ -361,16 +277,12 @@ export function Navigation() {
                       className={cn(
                         'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-sans',
                         pathname === '/settings'
-                          ? isDark
-                            ? 'bg-primary/10 text-primary'
-                            : 'bg-primary/10 text-primary'
-                          : isDark
-                            ? 'text-slate-300 hover:bg-slate-800'
-                            : 'text-slate-700 hover:bg-slate-100'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-accent'
                       )}
                     >
                       <Settings className="w-5 h-5" />
-                      <span className="font-medium">Paramètres</span>
+                      <span className="font-medium">Settings</span>
                     </Link>
                   </li>
                 </ul>

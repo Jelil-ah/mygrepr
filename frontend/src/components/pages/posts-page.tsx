@@ -1,20 +1,17 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { cn, isPostNew, getPostLanguage, getDataFreshness } from '@/lib/utils';
 import { Post, CATEGORIES, CATEGORY_COLORS } from '@/types/post';
-import { Search, X, ChevronLeft, ChevronRight, ExternalLink, MessageSquare, ArrowUp, Calendar, Filter, LayoutGrid, List, Globe, Clock, Sparkles } from 'lucide-react';
+import { Search, X, MessageSquare, ArrowUp, Filter, LayoutGrid, List, Clock, Sparkles } from 'lucide-react';
+import { PostDetail } from '@/components/dashboard/post-detail';
 
 interface PostsPageProps {
   posts: Post[];
 }
 
 export function PostsPage({ posts }: PostsPageProps) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -23,6 +20,9 @@ export function PostsPage({ posts }: PostsPageProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [visibleCount, setVisibleCount] = useState(30);
+
+  const POSTS_PER_PAGE = 30;
 
   // Data freshness
   const freshness = useMemo(() => getDataFreshness(posts), [posts]);
@@ -74,6 +74,18 @@ export function PostsPage({ posts }: PostsPageProps) {
     });
   }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
 
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(POSTS_PER_PAGE);
+  }, [searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
+
+  // Progressive loading
+  const visiblePosts = useMemo(
+    () => filteredPosts.slice(0, visibleCount),
+    [filteredPosts, visibleCount]
+  );
+  const hasMore = visibleCount < filteredPosts.length;
+
   // Navigation
   const currentIndex = selectedPost
     ? filteredPosts.findIndex((p) => p.Id === selectedPost.Id)
@@ -113,18 +125,20 @@ export function PostsPage({ posts }: PostsPageProps) {
   const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || selectedLanguage !== 'all' || searchQuery;
 
   return (
-    <main className="min-h-screen pt-20 pb-12 px-4">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="min-h-screen bg-background pt-20 pb-12 px-4"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+        <div className="mb-6">
+
           <h1
             className={cn(
               'text-3xl font-bold mb-2 font-sans',
-              isDark ? 'text-slate-100' : 'text-slate-900'
+              'text-foreground'
             )}
           >
             Posts
@@ -132,7 +146,7 @@ export function PostsPage({ posts }: PostsPageProps) {
           <p
             className={cn(
               'text-sm font-sans',
-              isDark ? 'text-slate-400' : 'text-slate-600'
+              'text-muted-foreground'
             )}
           >
             Parcourez les conseils financiers de Reddit
@@ -140,25 +154,21 @@ export function PostsPage({ posts }: PostsPageProps) {
           {/* Freshness indicator */}
           <div className={cn(
             'flex items-center gap-2 mt-2 text-xs',
-            freshness.hoursAgo < 24 ? 'text-green-500' : 'text-slate-500'
+            freshness.hoursAgo < 24 ? 'text-green-500' : 'text-muted-foreground'
           )}>
             <Clock className="w-3 h-3" />
             <span>{freshness.label}</span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Search + Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-col sm:flex-row gap-3 mb-4"
-        >
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+
           <div className="relative flex-1">
             <Search
               className={cn(
                 'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4',
-                isDark ? 'text-slate-500' : 'text-slate-400'
+                'text-muted-foreground'
               )}
             />
             <input
@@ -166,22 +176,14 @@ export function PostsPage({ posts }: PostsPageProps) {
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                'w-full pl-10 pr-4 py-2.5 rounded-lg border font-sans text-sm',
-                isDark
-                  ? 'bg-slate-800/50 border-slate-700 text-slate-100 placeholder:text-slate-500'
-                  : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400'
-              )}
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border font-sans text-sm bg-card border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2.5 rounded-lg border font-sans text-sm',
-                isDark
-                  ? 'bg-slate-800/50 border-slate-700 text-slate-300'
-                  : 'bg-white border-slate-200 text-slate-700',
+                'flex items-center gap-2 px-4 py-2.5 rounded-lg border font-sans text-sm bg-card border-border text-muted-foreground',
                 showFilters && 'border-primary text-primary'
               )}
             >
@@ -196,24 +198,19 @@ export function PostsPage({ posts }: PostsPageProps) {
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-sm text-red-500',
-                  isDark ? 'bg-red-500/10' : 'bg-red-50'
-                )}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-sm text-red-500 bg-red-50 dark:bg-red-500/10"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
-            <div className="flex rounded-lg overflow-hidden border dark:border-slate-700 border-slate-200">
+            <div className="flex rounded-lg overflow-hidden border border-border">
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn(
                   'p-2.5',
                   viewMode === 'grid'
                     ? 'bg-primary text-primary-foreground'
-                    : isDark
-                      ? 'bg-slate-800/50 text-slate-400'
-                      : 'bg-white text-slate-500'
+                    : 'bg-card text-muted-foreground'
                 )}
               >
                 <LayoutGrid className="w-4 h-4" />
@@ -224,25 +221,21 @@ export function PostsPage({ posts }: PostsPageProps) {
                   'p-2.5',
                   viewMode === 'list'
                     ? 'bg-primary text-primary-foreground'
-                    : isDark
-                      ? 'bg-slate-800/50 text-slate-400'
-                      : 'bg-white text-slate-500'
+                    : 'bg-card text-muted-foreground'
                 )}
               >
                 <List className="w-4 h-4" />
               </button>
             </div>
             {/* Language filter */}
-            <div className="flex rounded-lg overflow-hidden border dark:border-slate-700 border-slate-200">
+            <div className="flex rounded-lg overflow-hidden border border-border">
               <button
                 onClick={() => setSelectedLanguage('all')}
                 className={cn(
                   'px-3 py-2 text-xs font-medium',
                   selectedLanguage === 'all'
                     ? 'bg-primary text-primary-foreground'
-                    : isDark
-                      ? 'bg-slate-800/50 text-slate-400'
-                      : 'bg-white text-slate-500'
+                    : 'bg-card text-muted-foreground'
                 )}
               >
                 Tous
@@ -253,9 +246,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   'px-3 py-2 text-xs font-medium flex items-center gap-1',
                   selectedLanguage === 'fr'
                     ? 'bg-primary text-primary-foreground'
-                    : isDark
-                      ? 'bg-slate-800/50 text-slate-400'
-                      : 'bg-white text-slate-500'
+                    : 'bg-card text-muted-foreground'
                 )}
               >
                 🇫🇷 FR
@@ -266,16 +257,14 @@ export function PostsPage({ posts }: PostsPageProps) {
                   'px-3 py-2 text-xs font-medium flex items-center gap-1',
                   selectedLanguage === 'en'
                     ? 'bg-primary text-primary-foreground'
-                    : isDark
-                      ? 'bg-slate-800/50 text-slate-400'
-                      : 'bg-white text-slate-500'
+                    : 'bg-card text-muted-foreground'
                 )}
               >
                 🇬🇧 EN
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Filters Panel */}
         <AnimatePresence>
@@ -287,12 +276,7 @@ export function PostsPage({ posts }: PostsPageProps) {
               className="overflow-hidden mb-4"
             >
               <div
-                className={cn(
-                  'p-4 rounded-xl border',
-                  isDark
-                    ? 'bg-slate-800/50 border-slate-700'
-                    : 'bg-white border-slate-200'
-                )}
+                className="p-4 rounded-xl border bg-card border-border"
               >
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Categories */}
@@ -300,7 +284,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <h4
                       className={cn(
                         'text-xs font-semibold uppercase tracking-wide mb-3 font-sans',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
+                        'text-muted-foreground'
                       )}
                     >
                       Catégories
@@ -316,9 +300,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                               'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-sans transition-all',
                               isSelected
                                 ? 'bg-primary/20 text-primary border border-primary/30'
-                                : isDark
-                                  ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                : 'bg-muted text-muted-foreground hover:bg-accent'
                             )}
                           >
                             <div
@@ -340,7 +322,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <h4
                       className={cn(
                         'text-xs font-semibold uppercase tracking-wide mb-3 font-sans',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
+                        'text-muted-foreground'
                       )}
                     >
                       Sources
@@ -356,9 +338,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                               'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-sans transition-all',
                               isSelected
                                 ? 'bg-primary/20 text-primary border border-primary/30'
-                                : isDark
-                                  ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                : 'bg-muted text-muted-foreground hover:bg-accent'
                             )}
                           >
                             r/{subreddit}
@@ -378,43 +358,33 @@ export function PostsPage({ posts }: PostsPageProps) {
         <p
           className={cn(
             'text-sm font-sans mb-4',
-            isDark ? 'text-slate-400' : 'text-slate-500'
+            'text-muted-foreground'
           )}
         >
           {filteredPosts.length} résultats
         </p>
 
         {/* Posts Grid/List */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+        <div
           className={cn(
             viewMode === 'grid'
-              ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-4'
-              : 'flex flex-col gap-3'
+              ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3'
+              : 'flex flex-col gap-2'
           )}
         >
-          {filteredPosts.map((post, index) => (
-            <motion.div
+          {visiblePosts.map((post) => (
+            <div
               key={post.Id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(index * 0.03, 0.3) }}
-              whileHover={{ y: -2 }}
               onClick={() => setSelectedPost(post)}
               className={cn(
-                'rounded-xl border cursor-pointer transition-all',
-                isDark
-                  ? 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
-                  : 'bg-white border-slate-200 hover:border-slate-300',
-                viewMode === 'grid' ? 'p-4' : 'p-4 flex items-center gap-4'
+                'rounded-xl border cursor-pointer transition-all bg-card border-border hover:border-primary/30 hover:-translate-y-0.5',
+                viewMode === 'grid' ? 'p-3' : 'p-3 flex items-center gap-4'
               )}
             >
               {viewMode === 'grid' ? (
                 <>
                   {/* Grid View */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <div
                         className={cn(
@@ -435,7 +405,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <span
                       className={cn(
                         'text-xs font-sans',
-                        isDark ? 'text-slate-500' : 'text-slate-400'
+                        'text-muted-foreground'
                       )}
                     >
                       r/{post.subreddit}
@@ -444,8 +414,8 @@ export function PostsPage({ posts }: PostsPageProps) {
 
                   <h3
                     className={cn(
-                      'font-medium text-sm mb-2 line-clamp-2 font-sans',
-                      isDark ? 'text-slate-100' : 'text-slate-900'
+                      'font-medium text-sm mb-1.5 line-clamp-2 font-sans',
+                      'text-foreground'
                     )}
                   >
                     {post.title}
@@ -454,8 +424,8 @@ export function PostsPage({ posts }: PostsPageProps) {
                   {post.summary && (
                     <p
                       className={cn(
-                        'text-xs line-clamp-2 mb-3 font-sans',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
+                        'text-xs line-clamp-3 mb-2 font-sans',
+                        'text-muted-foreground'
                       )}
                     >
                       {post.summary}
@@ -467,7 +437,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                       <span
                         className={cn(
                           'flex items-center gap-1',
-                          isDark ? 'text-slate-400' : 'text-slate-500'
+                          'text-muted-foreground'
                         )}
                       >
                         <ArrowUp className="w-3 h-3" />
@@ -476,7 +446,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                       <span
                         className={cn(
                           'flex items-center gap-1',
-                          isDark ? 'text-slate-400' : 'text-slate-500'
+                          'text-muted-foreground'
                         )}
                       >
                         <MessageSquare className="w-3 h-3" />
@@ -509,7 +479,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <h3
                       className={cn(
                         'font-medium text-sm truncate font-sans',
-                        isDark ? 'text-slate-100' : 'text-slate-900'
+                        'text-foreground'
                       )}
                     >
                       {post.title}
@@ -519,7 +489,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <span
                       className={cn(
                         'flex items-center gap-1',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
+                        'text-muted-foreground'
                       )}
                     >
                       <ArrowUp className="w-3 h-3" />
@@ -527,7 +497,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     </span>
                     <span
                       className={cn(
-                        isDark ? 'text-slate-500' : 'text-slate-400'
+                        'text-muted-foreground'
                       )}
                     >
                       r/{post.subreddit}
@@ -535,185 +505,35 @@ export function PostsPage({ posts }: PostsPageProps) {
                   </div>
                 </>
               )}
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
+
+        {/* Load more */}
+        {hasMore && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + POSTS_PER_PAGE)}
+              className="px-6 py-2.5 rounded-lg border font-sans text-sm transition-colors bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            >
+              Afficher plus ({filteredPosts.length - visibleCount} restants)
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Post Detail Modal */}
-      <AnimatePresence>
-        {selectedPost && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-              onClick={() => setSelectedPost(null)}
-            />
-            <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.95 }}
-              className={cn(
-                'fixed inset-4 md:inset-10 lg:inset-20 z-50 overflow-auto rounded-2xl border',
-                isDark
-                  ? 'bg-slate-900 border-slate-700'
-                  : 'bg-white border-slate-200'
-              )}
-            >
-              {/* Modal Header */}
-              <div
-                className={cn(
-                  'sticky top-0 z-10 flex items-center justify-between p-4 border-b backdrop-blur-md',
-                  isDark
-                    ? 'bg-slate-900/90 border-slate-700'
-                    : 'bg-white/90 border-slate-200'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handlePrev}
-                    disabled={currentIndex <= 0}
-                    className={cn(
-                      'p-2 rounded-lg transition-colors',
-                      isDark
-                        ? 'hover:bg-slate-800 disabled:opacity-30'
-                        : 'hover:bg-slate-100 disabled:opacity-30'
-                    )}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <span
-                    className={cn(
-                      'text-sm font-sans',
-                      isDark ? 'text-slate-400' : 'text-slate-500'
-                    )}
-                  >
-                    {currentIndex + 1} / {filteredPosts.length}
-                  </span>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentIndex >= filteredPosts.length - 1}
-                    className={cn(
-                      'p-2 rounded-lg transition-colors',
-                      isDark
-                        ? 'hover:bg-slate-800 disabled:opacity-30'
-                        : 'hover:bg-slate-100 disabled:opacity-30'
-                    )}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-                <button
-                  onClick={() => setSelectedPost(null)}
-                  className={cn(
-                    'p-2 rounded-lg transition-colors',
-                    isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'
-                  )}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div
-                    className={cn(
-                      'px-2 py-0.5 rounded text-xs font-sans',
-                      CATEGORY_COLORS[selectedPost.category || ''] || 'bg-slate-500',
-                      'text-white'
-                    )}
-                  >
-                    {selectedPost.category}
-                  </div>
-                  <span
-                    className={cn(
-                      'text-xs font-sans',
-                      isDark ? 'text-slate-500' : 'text-slate-400'
-                    )}
-                  >
-                    r/{selectedPost.subreddit}
-                  </span>
-                </div>
-
-                <h2
-                  className={cn(
-                    'text-xl font-bold mb-4 font-sans',
-                    isDark ? 'text-slate-100' : 'text-slate-900'
-                  )}
-                >
-                  {selectedPost.title}
-                </h2>
-
-                {selectedPost.summary && (
-                  <div
-                    className={cn(
-                      'p-4 rounded-lg mb-4',
-                      isDark ? 'bg-slate-800/50' : 'bg-slate-100'
-                    )}
-                  >
-                    <p
-                      className={cn(
-                        'text-sm font-sans',
-                        isDark ? 'text-slate-300' : 'text-slate-700'
-                      )}
-                    >
-                      {selectedPost.summary}
-                    </p>
-                  </div>
-                )}
-
-                {/* ETFs */}
-                {selectedPost.etf_detected && selectedPost.etf_detected.length > 0 && (
-                  <div className="mb-4">
-                    <h4
-                      className={cn(
-                        'text-xs font-semibold uppercase tracking-wide mb-2 font-sans',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
-                      )}
-                    >
-                      ETFs mentionnés
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedPost.etf_detected.map((etf) => (
-                        <span
-                          key={etf}
-                          className={cn(
-                            'px-2 py-1 rounded text-xs font-sans',
-                            isDark
-                              ? 'bg-green-500/20 text-green-400'
-                              : 'bg-green-100 text-green-700'
-                          )}
-                        >
-                          {etf}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Link */}
-                {selectedPost.url && (
-                  <a
-                    href={selectedPost.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-sans',
-                      'bg-primary text-primary-foreground hover:brightness-110 transition-all'
-                    )}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Voir sur Reddit
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </main>
+      <PostDetail
+        post={selectedPost}
+        open={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        hasPrev={currentIndex > 0}
+        hasNext={currentIndex < filteredPosts.length - 1}
+        currentIndex={currentIndex}
+        totalCount={filteredPosts.length}
+      />
+    </motion.main>
   );
 }
