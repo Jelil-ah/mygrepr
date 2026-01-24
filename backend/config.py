@@ -46,9 +46,15 @@ SUBREDDITS = [s for s in _raw_subreddits if validate_subreddit_name(s)]
 if len(SUBREDDITS) != len(_raw_subreddits):
     invalid = [s for s in _raw_subreddits if not validate_subreddit_name(s)]
     logger.warning(f"Invalid subreddit names removed: {invalid}")
-MIN_SCORE = 10  # Minimum upvotes to include
+MIN_SCORE = 10  # Minimum upvotes for top/backfill posts
+MIN_SCORE_NEW = 2  # Lower threshold for new/recent posts
 POSTS_PER_REQUEST = 100  # Max 100 per Reddit API
 TIME_FILTER = "all"  # hour, day, week, month, year, all
+
+# Reddit API (PRAW) - for authenticated access
+REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID")
+REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
+REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT", "grepr:v1.0 (personal use)")
 
 # AI Provider selection: "groq" or "deepseek"
 AI_PROVIDER = os.getenv("AI_PROVIDER", "groq")

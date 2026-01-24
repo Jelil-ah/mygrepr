@@ -47,13 +47,13 @@ def save_progress(progress: dict):
         json.dump(progress, f, indent=2)
 
 
-def fetch_batch(subreddit: str, time_filter: str, limit: int, existing_ids: set) -> list[dict]:
+def fetch_batch(subreddit: str, time_filter: str, limit: int, existing_ids: set, sort: str = "top") -> list[dict]:
     """
     Fetch a batch of posts from a subreddit, filtering out already existing ones.
     Returns list of new posts.
     """
     new_posts = []
-    for post in fetch_subreddit_posts(subreddit, time_filter=time_filter, limit=limit):
+    for post in fetch_subreddit_posts(subreddit, time_filter=time_filter, limit=limit, sort=sort):
         # Skip if we already have this post
         if post["id"] in existing_ids:
             continue
@@ -102,40 +102,54 @@ def run_scheduler(dry_run: bool = False):
         logger.info(f"\n📥 Processing r/{subreddit}...")
 
         sub_progress = progress["subreddit_progress"].get(subreddit, {"fetched": 0, "period_index": 0})
-        period_index = sub_progress["period_index"]
-
         posts_fetched_today = 0
 
-        # Try fetching from current period, then move to older periods
+        # Step 1: Fetch NEW posts (recent posts, regardless of score history)
+        logger.info(f"  Fetching new posts (sort=new)...")
+        new_posts = fetch_batch(
+            subreddit,
+            time_filter="day",
+            limit=POSTS_PER_DAY_PER_SUBREDDIT,
+            existing_ids=existing_ids,
+            sort="new"
+        )
+        if new_posts:
+            logger.info(f"  Found {len(new_posts)} new posts (sort=new)")
+            all_new_posts.extend(new_posts)
+            posts_fetched_today += len(new_posts)
+            for post in new_posts:
+                existing_ids.add(post["id"])
+
+        # Step 2: Backfill with TOP posts from each period (starts fresh each day)
+        period_index = 0
         while posts_fetched_today < POSTS_PER_DAY_PER_SUBREDDIT and period_index < len(TIME_PERIODS):
             time_filter, period_name = TIME_PERIODS[period_index]
             remaining = POSTS_PER_DAY_PER_SUBREDDIT - posts_fetched_today
 
-            logger.info(f"  Fetching from {period_name} (time_filter={time_filter})...")
+            logger.info(f"  Backfill: {period_name} (sort=top, t={time_filter})...")
 
-            new_posts = fetch_batch(
+            top_posts = fetch_batch(
                 subreddit,
                 time_filter=time_filter,
                 limit=remaining,
-                existing_ids=existing_ids
+                existing_ids=existing_ids,
+                sort="top"
             )
 
-            if new_posts:
-                logger.info(f"  Found {len(new_posts)} new posts")
-                all_new_posts.extend(new_posts)
-                posts_fetched_today += len(new_posts)
-
-                # Add to existing_ids to avoid duplicates
-                for post in new_posts:
+            if top_posts:
+                logger.info(f"  Found {len(top_posts)} new posts (top/{period_name})")
+                all_new_posts.extend(top_posts)
+                posts_fetched_today += len(top_posts)
+                for post in top_posts:
                     existing_ids.add(post["id"])
             else:
-                logger.info(f"  No new posts found, moving to older period...")
+                logger.info(f"  No new top posts in {period_name}, next period...")
                 period_index += 1
 
         # Update progress for this subreddit
         progress["subreddit_progress"][subreddit] = {
             "fetched": sub_progress["fetched"] + posts_fetched_today,
-            "period_index": period_index
+            "period_index": 0  # Always reset - we start fresh each day
         }
 
         logger.info(f"  Total fetched today from r/{subreddit}: {posts_fetched_today}")
