@@ -7,6 +7,7 @@ import { Post, CATEGORY_COLORS } from '@/types/post';
 import { getETFInsights } from '@/lib/nocodb';
 import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Award, Sparkles, Clock, ExternalLink } from 'lucide-react';
 import { ETFComparison } from '@/components/dashboard/etf-comparison';
+import { DailyDigest } from '@/components/dashboard/daily-digest';
 import { PostDetail } from '@/components/dashboard/post-detail';
 import { isPostFavorite, togglePostFavorite, getFavorites } from '@/lib/favorites';
 import Link from 'next/link';
@@ -145,6 +146,9 @@ export function DashboardPage({ posts }: DashboardPageProps) {
             )}
           </div>
         </div>
+
+        {/* Daily Digest */}
+        <DailyDigest posts={posts} onPostClick={handlePostClick} />
 
         {/* Two Collapsible Sections - Side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8 items-start">
