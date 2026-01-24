@@ -174,9 +174,9 @@ export function Navigation() {
                     {/* Active dot when collapsed */}
                     {isActive && isScrolled && (
                       <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                        layoutId="nav-active-dot"
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
                     )}
                   </Link>

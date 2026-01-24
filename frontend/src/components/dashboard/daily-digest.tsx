@@ -147,7 +147,7 @@ export function DailyDigest({ posts, onPostClick }: DailyDigestProps) {
 
   const insightColors = {
     consensus: 'text-green-500',
-    trending: 'text-blue-500',
+    trending: 'text-violet-500',
     advice: 'text-amber-500',
   };
 

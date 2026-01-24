@@ -87,9 +87,9 @@ export type Category = typeof CATEGORIES[number];
 
 export const CATEGORY_COLORS: Record<string, string> = {
   'ETF': 'bg-green-500',
-  'Immobilier': 'bg-blue-500',
+  'Immobilier': 'bg-violet-500',
   'Crypto': 'bg-orange-500',
-  'Epargne': 'bg-purple-500',
+  'Epargne': 'bg-blue-500',
   'Fiscalite': 'bg-red-500',
   'Actions': 'bg-cyan-500',
   'Strategie': 'bg-pink-500',

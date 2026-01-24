@@ -21,6 +21,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
   const [showStats, setShowStats] = useState(false);
   const [showETF, setShowETF] = useState(false);
   const [langFilter, setLangFilter] = useState<'all' | 'fr' | 'en'>('fr');
+  const [etfLang, setEtfLang] = useState<'all' | 'fr' | 'en'>('all');
   const [favoritePosts, setFavoritePosts] = useState<Set<string>>(new Set());
 
   // Load favorites on mount
@@ -101,6 +102,12 @@ export function DashboardPage({ posts }: DashboardPageProps) {
       bestAdvicePost,
     };
   }, [posts]);
+
+  // ETF posts filtered by language
+  const etfPosts = useMemo(() => {
+    if (etfLang === 'all') return posts;
+    return posts.filter(p => getPostLanguage(p.subreddit) === etfLang);
+  }, [posts, etfLang]);
 
   // Filter posts by language, sorted by score
   const displayPosts = useMemo(() => {
@@ -190,7 +197,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                   <div className="px-4 pb-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-500" />
+                        <FileText className="w-4 h-4 text-violet-500" />
                         <div>
                           <p className="text-lg font-bold">{stats.totalPosts}</p>
                           <p className="text-xs text-muted-foreground">Posts analysés</p>
@@ -211,7 +218,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ArrowUp className="w-4 h-4 text-purple-500" />
+                        <ArrowUp className="w-4 h-4 text-blue-500" />
                         <div>
                           <p className="text-lg font-bold">{stats.avgScore}</p>
                           <p className="text-xs text-muted-foreground">Upvotes moyen</p>
@@ -260,7 +267,28 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                   className="overflow-hidden"
                 >
                   <div className="px-4 pb-4">
-                    <ETFComparison posts={posts} onPostClick={handlePostClick} compact />
+                    {/* ETF Language Toggle */}
+                    <div className="flex items-center gap-1 mb-3">
+                      {([
+                        { key: 'all' as const, label: 'Tous' },
+                        { key: 'fr' as const, label: 'FR' },
+                        { key: 'en' as const, label: 'EN' },
+                      ]).map(({ key, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => setEtfLang(key)}
+                          className={cn(
+                            'px-2.5 py-1 rounded text-xs font-medium transition-all',
+                            etfLang === key
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground bg-muted/50'
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <ETFComparison posts={etfPosts} onPostClick={handlePostClick} compact />
                   </div>
                 </motion.div>
               )}
