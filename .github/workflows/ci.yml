@@ -48,9 +48,16 @@ jobs:
         needs: [test-backend, build-frontend]
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         steps:
-            - name: Trigger Dokploy deploy
+            - name: Deploy Frontend
               run: |
-                  curl -s -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+                  curl -s -X POST "${{ secrets.DOKPLOY_WEBHOOK_FRONTEND }}" \
                     --fail \
                     --max-time 30
-                  echo "Deploy triggered successfully"
+                  echo "Frontend deploy triggered"
+
+            - name: Deploy Backend
+              run: |
+                  curl -s -X POST "${{ secrets.DOKPLOY_WEBHOOK_BACKEND }}" \
+                    --fail \
+                    --max-time 30
+                  echo "Backend deploy triggered"
