@@ -171,11 +171,14 @@ export function Navigation() {
                     >
                       {item.label}
                     </span>
-                    {/* Active dot when collapsed */}
-                    {isActive && isScrolled && (
+                    {/* Active dot indicator - always visible */}
+                    {isActive && (
                       <motion.div
                         layoutId="nav-active-dot"
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
+                        className={cn(
+                          'absolute left-1/2 -translate-x-1/2 rounded-full bg-primary',
+                          isScrolled ? '-bottom-1 w-1.5 h-1.5' : '-bottom-2 w-2 h-2'
+                        )}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
                     )}
