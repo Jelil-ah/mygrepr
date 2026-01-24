@@ -1,23 +1,23 @@
 import { Post } from '@/types/post';
 
-// Server-side only: validate required environment variables
-// These MUST NOT have the NEXT_PUBLIC_ prefix to prevent client-side exposure
-const _baseUrl = process.env.NOCODB_URL;
-const _token = process.env.NOCODB_TOKEN;
-const _tableId = process.env.NOCODB_TABLE_ID;
-
-if (!_baseUrl || !_token || !_tableId) {
-  throw new Error('Missing required NOCODB environment variables. Ensure NOCODB_URL, NOCODB_TOKEN, NOCODB_TABLE_ID are set in .env.local');
-}
-
-const NOCODB_BASE_URL: string = _baseUrl;
-const NOCODB_API_TOKEN: string = _token;
-const NOCODB_TABLE_ID: string = _tableId;
-
+// Server-side only: these MUST NOT have the NEXT_PUBLIC_ prefix to prevent client-side exposure
 const MAX_PAGINATION_ITERATIONS = 20;
 
+function getEnvConfig() {
+  const baseUrl = process.env.NOCODB_URL;
+  const token = process.env.NOCODB_TOKEN;
+  const tableId = process.env.NOCODB_TABLE_ID;
+
+  if (!baseUrl || !token || !tableId) {
+    throw new Error('Missing required NOCODB environment variables. Ensure NOCODB_URL, NOCODB_TOKEN, NOCODB_TABLE_ID are set.');
+  }
+
+  return { baseUrl, token, tableId };
+}
+
 export async function fetchPosts(): Promise<Post[]> {
-  const url = `${NOCODB_BASE_URL}/api/v2/tables/${NOCODB_TABLE_ID}/records`;
+  const { baseUrl, token, tableId } = getEnvConfig();
+  const url = `${baseUrl}/api/v2/tables/${tableId}/records`;
   const allPosts: Post[] = [];
   let offset = 0;
   const limit = 1000;
@@ -28,7 +28,7 @@ export async function fetchPosts(): Promise<Post[]> {
       iterations++;
       const response = await fetch(`${url}?limit=${limit}&offset=${offset}`, {
         headers: {
-          'xc-token': NOCODB_API_TOKEN,
+          'xc-token': token,
         },
         cache: 'no-store',
       });
