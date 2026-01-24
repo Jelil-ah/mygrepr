@@ -19,33 +19,37 @@ export async function fetchPosts(): Promise<Post[]> {
   let offset = 0;
   const limit = 1000;
 
-  while (true) {
-    const response = await fetch(`${url}?limit=${limit}&offset=${offset}`, {
-      headers: {
-        'xc-token': NOCODB_API_TOKEN,
-      },
-      next: { revalidate: 60 },
-    });
+  try {
+    while (true) {
+      const response = await fetch(`${url}?limit=${limit}&offset=${offset}`, {
+        headers: {
+          'xc-token': NOCODB_API_TOKEN,
+        },
+        next: { revalidate: 60 },
+      });
 
-    if (!response.ok) {
-      console.error('Failed to fetch posts:', response.statusText);
-      break;
+      if (!response.ok) {
+        console.error('Failed to fetch posts:', response.statusText);
+        break;
+      }
+
+      const data = await response.json();
+      const records = data.list || [];
+
+      if (records.length === 0) break;
+
+      const validRecords = records.filter((post: Post) =>
+        post.title && post.reddit_id
+      );
+
+      allPosts.push(...validRecords);
+
+      if (records.length < limit) break;
+      offset += limit;
     }
-
-    const data = await response.json();
-    const records = data.list || [];
-
-    if (records.length === 0) break;
-
-    // Filter out invalid posts (missing title or reddit_id)
-    const validRecords = records.filter((post: Post) =>
-      post.title && post.reddit_id
-    );
-
-    allPosts.push(...validRecords);
-
-    if (records.length < limit) break;
-    offset += limit;
+  } catch (error) {
+    console.error('Failed to connect to NocoDB:', error);
+    return [];
   }
 
   return allPosts;
