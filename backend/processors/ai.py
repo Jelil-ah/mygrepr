@@ -80,98 +80,88 @@ def extract_financial_data(text: str) -> dict:
     # Remove duplicates and sort
     extracted["amounts"] = sorted(list(set(amounts_found)), reverse=True)
 
+    # Helper to parse a number string that may contain spaces (French format: "2 500")
+    def parse_french_number(num_str: str, mult_str: str = '') -> int | None:
+        # Remove spaces/nbsp used as thousand separators
+        cleaned = num_str.replace('\u00a0', '').replace(' ', '').replace(',', '.')
+        multiplier = 1
+        if mult_str:
+            m = mult_str.lower()
+            if m == 'k':
+                multiplier = 1000
+            elif m == 'm':
+                multiplier = 1000000
+        try:
+            return int(float(cleaned) * multiplier)
+        except ValueError:
+            return None
+
+    # Number pattern that handles French formatting: "2500", "2 500", "2,5"
+    NUM_FR = r'(\d{1,3}(?:[\s\u00a0]\d{3})*(?:[.,]\d+)?)'
+
     # Extract patrimoine (net worth)
     patrimoine_patterns = [
-        r'patrimoine[^\d]*(\d+(?:[.,]\d+)?)\s*([kKmM])?',
-        r'(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*(?:€|euros?)?\s*(?:de\s+)?patrimoine',
-        r'atteint\s+(\d+(?:[.,]\d+)?)\s*([kKmM])?',
-        r'j\'?ai\s+(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]',
+        rf'patrimoine[^\d]*{NUM_FR}\s*([kKmM])?',
+        rf'{NUM_FR}\s*([kKmM])?\s*(?:€|euros?)?\s*(?:de\s+)?patrimoine',
+        rf'atteint\s+{NUM_FR}\s*([kKmM])?',
+        rf'j\'?ai\s+{NUM_FR}\s*([kKmM])?\s*[€$]',
     ]
     for pattern in patrimoine_patterns:
         match = re.search(pattern, text_lower)
         if match:
-            num_str = match.group(1).replace(',', '.')
-            multiplier = 1
-            if match.lastindex >= 2 and match.group(2):
-                mult_char = match.group(2).lower()
-                if mult_char == 'k':
-                    multiplier = 1000
-                elif mult_char == 'm':
-                    multiplier = 1000000
-            try:
-                extracted["patrimoine"] = int(float(num_str) * multiplier)
+            mult = match.group(2) if match.lastindex >= 2 else ''
+            value = parse_french_number(match.group(1), mult or '')
+            if value and value >= 100:
+                extracted["patrimoine"] = value
                 break
-            except ValueError:
-                pass
 
     # Extract annual income
     revenus_patterns = [
-        r'(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]?\s*(?:par\s+an|\/an|annuel)',
-        r'salaire[^\d]*(\d+(?:[.,]\d+)?)\s*([kKmM])?',
-        r'revenu[^\d]*(\d+(?:[.,]\d+)?)\s*([kKmM])?',
-        r'gagne[^\d]*(\d+(?:[.,]\d+)?)\s*([kKmM])?',
+        rf'{NUM_FR}\s*([kKmM])?\s*[€$]?\s*(?:par\s+an|\/an|annuel)',
+        rf'salaire[^\d]*{NUM_FR}\s*([kKmM])?',
+        rf'revenu[^\d]*{NUM_FR}\s*([kKmM])?',
+        rf'gagne[^\d]*{NUM_FR}\s*([kKmM])?',
     ]
     for pattern in revenus_patterns:
         match = re.search(pattern, text_lower)
         if match:
-            num_str = match.group(1).replace(',', '.')
-            multiplier = 1
-            if match.lastindex >= 2 and match.group(2):
-                mult_char = match.group(2).lower()
-                if mult_char == 'k':
-                    multiplier = 1000
-                elif mult_char == 'm':
-                    multiplier = 1000000
-            try:
-                amount = int(float(num_str) * multiplier)
+            mult = match.group(2) if match.lastindex >= 2 else ''
+            amount = parse_french_number(match.group(1), mult or '')
+            if amount:
                 # If it looks like monthly, convert to annual
                 if amount < 10000:
                     amount *= 12
                 extracted["revenus_annuels"] = amount
                 break
-            except ValueError:
-                pass
 
     # Extract monthly income
     mensuel_patterns = [
-        r'(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois|mensuel)',
-        r'(\d+(?:[.,]\d+)?)\s*[€$]\s*net',
+        rf'{NUM_FR}\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois|mensuel)',
+        rf'{NUM_FR}\s*[€$]\s*net',
     ]
     for pattern in mensuel_patterns:
         match = re.search(pattern, text_lower)
         if match:
-            num_str = match.group(1).replace(',', '.')
-            multiplier = 1
-            if match.lastindex >= 2 and match.group(2):
-                mult_char = match.group(2).lower()
-                if mult_char == 'k':
-                    multiplier = 1000
-            try:
-                extracted["revenus_mensuels"] = int(float(num_str) * multiplier)
+            mult = match.group(2) if match.lastindex >= 2 and match.group(2) else ''
+            value = parse_french_number(match.group(1), mult)
+            if value and value >= 100:
+                extracted["revenus_mensuels"] = value
                 break
-            except ValueError:
-                pass
 
     # Extract monthly savings
     epargne_patterns = [
-        r'épargn\w*[^\d]*(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois|mensuel)',
-        r'met\w*\s+(?:de\s+côté\s+)?(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois)',
-        r'investis?\w*\s+(\d+(?:[.,]\d+)?)\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois)',
+        rf'épargn\w*[^\d]*{NUM_FR}\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois|mensuel)',
+        rf'met\w*\s+(?:de\s+côté\s+)?{NUM_FR}\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois)',
+        rf'investis?\w*\s+{NUM_FR}\s*([kKmM])?\s*[€$]?\s*(?:par\s+mois|\/mois)',
     ]
     for pattern in epargne_patterns:
         match = re.search(pattern, text_lower)
         if match:
-            num_str = match.group(1).replace(',', '.')
-            multiplier = 1
-            if match.lastindex >= 2 and match.group(2):
-                mult_char = match.group(2).lower()
-                if mult_char == 'k':
-                    multiplier = 1000
-            try:
-                extracted["epargne_mensuelle"] = int(float(num_str) * multiplier)
+            mult = match.group(2) if match.lastindex >= 2 and match.group(2) else ''
+            value = parse_french_number(match.group(1), mult)
+            if value and value >= 50:
+                extracted["epargne_mensuelle"] = value
                 break
-            except ValueError:
-                pass
 
     # Extract duration FIRST (to avoid confusion with age)
     duree_patterns = [

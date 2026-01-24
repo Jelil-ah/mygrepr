@@ -92,8 +92,44 @@ export function filterByTimePeriod(createdUtc: number | undefined, period: TimeP
   }
 }
 
-// French subreddits list
+// French subreddits (used for score normalization and language detection)
 const FRENCH_SUBREDDITS = ['vosfinances', 'vossous'];
+
+// Confidence score: combines upvotes, ratio, and engagement
+// Normalized per community size (FR subreddits have fewer users)
+export function getConfidenceScore(post: { score?: number; upvote_ratio?: number; num_comments?: number; subreddit?: string }): {
+  score: number; // 0-100
+  level: 'high' | 'medium' | 'low';
+  label: string;
+  color: string;
+} {
+  const rawScore = post.score || 0;
+  const ratio = post.upvote_ratio || 0.5;
+  const comments = post.num_comments || 0;
+
+  // Normalize threshold by community size
+  // FR subreddits (vosfinances ~230k members): ~200 upvotes = excellent
+  // EN subreddits (personalfinance ~18M members): ~1000 upvotes = excellent
+  const isFR = FRENCH_SUBREDDITS.includes((post.subreddit || '').toLowerCase());
+  const maxReference = isFR ? 300 : 1000;
+
+  // Formula: score * ratio * engagement multiplier
+  const engagementMultiplier = 1 + Math.log10(comments + 1);
+  const raw = rawScore * ratio * engagementMultiplier;
+
+  // Normalize to 0-100 relative to community
+  const normalized = Math.min(100, Math.round((raw / maxReference) * 100));
+
+  if (normalized >= 70) {
+    return { score: normalized, level: 'high', label: 'Fiable', color: 'text-green-500' };
+  }
+  if (normalized >= 35) {
+    return { score: normalized, level: 'medium', label: 'Modéré', color: 'text-amber-500' };
+  }
+  return { score: normalized, level: 'low', label: 'Faible', color: 'text-muted-foreground' };
+}
+
+// (FRENCH_SUBREDDITS declared above)
 
 // Get post language based on subreddit
 export function getPostLanguage(subreddit: string | undefined): 'fr' | 'en' {

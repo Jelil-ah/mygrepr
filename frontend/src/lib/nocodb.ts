@@ -25,7 +25,7 @@ export async function fetchPosts(): Promise<Post[]> {
         headers: {
           'xc-token': NOCODB_API_TOKEN,
         },
-        next: { revalidate: 60 },
+        cache: 'no-store',
       });
 
       if (!response.ok) {

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, getPostLanguage, getDataFreshness, getPostFreshness, filterByTimePeriod, type TimePeriod } from '@/lib/utils';
+import { cn, getPostLanguage, getDataFreshness, getPostFreshness, getConfidenceScore, filterByTimePeriod, type TimePeriod } from '@/lib/utils';
 import { Post, CATEGORIES, CATEGORY_COLORS } from '@/types/post';
 import { Search, X, MessageSquare, ArrowUp, Filter, LayoutGrid, List, Clock } from 'lucide-react';
 import { PostDetail } from '@/components/dashboard/post-detail';
@@ -16,9 +16,10 @@ export function PostsPage({ posts }: PostsPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubreddits, setSelectedSubreddits] = useState<string[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'fr' | 'en'>('all');
+  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'fr' | 'en'>('fr');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>('all');
+  const [sortBy, setSortBy] = useState<'score' | 'confidence' | 'date'>('score');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [visibleCount, setVisibleCount] = useState(30);
@@ -74,8 +75,20 @@ export function PostsPage({ posts }: PostsPageProps) {
       const matchesTime = filterByTimePeriod(p.created_utc, selectedTimePeriod, p.created_a);
 
       return matchesSearch && matchesCategory && matchesSubreddit && matchesLanguage && matchesTime;
+    }).sort((a, b) => {
+      switch (sortBy) {
+        case 'confidence':
+          return getConfidenceScore(b).score - getConfidenceScore(a).score;
+        case 'date': {
+          const dateA = a.created_utc || (a.created_a ? new Date(a.created_a + 'Z').getTime() / 1000 : 0);
+          const dateB = b.created_utc || (b.created_a ? new Date(b.created_a + 'Z').getTime() / 1000 : 0);
+          return dateB - dateA;
+        }
+        default:
+          return (b.score || 0) - (a.score || 0);
+      }
     });
-  }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage, selectedTimePeriod]);
+  }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage, selectedTimePeriod, sortBy]);
 
   // Reset visible count when filters change
   useEffect(() => {
@@ -381,6 +394,29 @@ export function PostsPage({ posts }: PostsPageProps) {
           )}
         </AnimatePresence>
 
+        {/* Sort options */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-muted-foreground">Trier par :</span>
+          {([
+            { value: 'score', label: 'Upvotes' },
+            { value: 'confidence', label: 'Fiabilité' },
+            { value: 'date', label: 'Date' },
+          ] as { value: typeof sortBy; label: string }[]).map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setSortBy(value)}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                sortBy === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Results count */}
         <p
           className={cn(
@@ -482,6 +518,14 @@ export function PostsPage({ posts }: PostsPageProps) {
                         {post.num_comments}
                       </span>
                     </div>
+                    {(() => {
+                      const confidence = getConfidenceScore(post);
+                      return (
+                        <span className={cn('font-medium', confidence.color)}>
+                          {confidence.score}%
+                        </span>
+                      );
+                    })()}
                   </div>
                 </>
               ) : (
@@ -526,6 +570,14 @@ export function PostsPage({ posts }: PostsPageProps) {
                       <ArrowUp className="w-3 h-3" />
                       {post.score}
                     </span>
+                    {(() => {
+                      const confidence = getConfidenceScore(post);
+                      return (
+                        <span className={cn('font-medium', confidence.color)}>
+                          {confidence.score}%
+                        </span>
+                      );
+                    })()}
                     <span
                       className={cn(
                         'text-muted-foreground'

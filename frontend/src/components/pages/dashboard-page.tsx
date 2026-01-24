@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, getDataFreshness, getPostFreshness } from '@/lib/utils';
+import { cn, getDataFreshness, getPostFreshness, getPostLanguage } from '@/lib/utils';
 import { Post, CATEGORY_COLORS } from '@/types/post';
 import { getETFInsights } from '@/lib/nocodb';
 import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Award, Sparkles, Clock, ExternalLink } from 'lucide-react';
@@ -20,6 +20,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showStats, setShowStats] = useState(false);
   const [showETF, setShowETF] = useState(false);
+  const [langFilter, setLangFilter] = useState<'all' | 'fr' | 'en'>('fr');
   const [favoritePosts, setFavoritePosts] = useState<Set<string>>(new Set());
 
   // Load favorites on mount
@@ -100,6 +101,14 @@ export function DashboardPage({ posts }: DashboardPageProps) {
       bestAdvicePost,
     };
   }, [posts]);
+
+  // Filter posts by language, sorted by score
+  const displayPosts = useMemo(() => {
+    const filtered = langFilter === 'all'
+      ? posts
+      : posts.filter(p => getPostLanguage(p.subreddit) === langFilter);
+    return filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+  }, [posts, langFilter]);
 
   const formatMontant = (n: number) => {
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M€`;
@@ -297,8 +306,33 @@ export function DashboardPage({ posts }: DashboardPageProps) {
             </Link>
           </div>
 
+          {/* Language Toggle */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1">
+              {([
+                { key: 'all' as const, label: 'Tous', flag: '' },
+                { key: 'fr' as const, label: 'FR', flag: '\u{1F1EB}\u{1F1F7}' },
+                { key: 'en' as const, label: 'EN', flag: '\u{1F1EC}\u{1F1E7}' },
+              ]).map(({ key, label, flag }) => (
+                <button
+                  key={key}
+                  onClick={() => setLangFilter(key)}
+                  className={cn(
+                    'px-4 py-1.5 rounded-md text-sm font-medium transition-all',
+                    langFilter === key
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {flag && <span className="mr-1.5">{flag}</span>}
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3">
-            {posts.slice(0, 8).map((post) => {
+            {displayPosts.slice(0, 8).map((post) => {
               const isFavorite = favoritePosts.has(post.reddit_id);
               return (
                 <div
@@ -325,10 +359,10 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                           r/{post.subreddit}
                         </span>
                         {(() => {
-                          const freshness = getPostFreshness(post.created_utc, post.created_a);
+                          const f = getPostFreshness(post.created_utc, post.created_a);
                           return (
-                            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', freshness.bgColor, freshness.color)}>
-                              {freshness.label}
+                            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', f.bgColor, f.color)}>
+                              {f.label}
                             </span>
                           );
                         })()}
@@ -360,7 +394,6 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                         )}
                       </div>
                     </div>
-                    {/* Favorite button */}
                     <button
                       onClick={(e) => handleToggleFavorite(e, post.reddit_id)}
                       className={cn(
@@ -379,13 +412,13 @@ export function DashboardPage({ posts }: DashboardPageProps) {
             })}
           </div>
 
-          {posts.length > 8 && (
+          {displayPosts.length > 8 && (
             <div className="mt-4 text-center">
               <Link
                 href="/posts"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Voir les {posts.length - 8} autres posts
+                Voir les {displayPosts.length - 8} autres posts
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
