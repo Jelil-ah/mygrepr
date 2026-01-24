@@ -1,26 +1,31 @@
 import { Post } from '@/types/post';
 
-// Validate required environment variables
-const _baseUrl = process.env.NEXT_PUBLIC_NOCODB_URL;
-const _token = process.env.NEXT_PUBLIC_NOCODB_TOKEN;
-const _tableId = process.env.NEXT_PUBLIC_NOCODB_TABLE_ID;
+// Server-side only: validate required environment variables
+// These MUST NOT have the NEXT_PUBLIC_ prefix to prevent client-side exposure
+const _baseUrl = process.env.NOCODB_URL;
+const _token = process.env.NOCODB_TOKEN;
+const _tableId = process.env.NOCODB_TABLE_ID;
 
 if (!_baseUrl || !_token || !_tableId) {
-  throw new Error('Missing required NOCODB environment variables (NEXT_PUBLIC_NOCODB_URL, NEXT_PUBLIC_NOCODB_TOKEN, NEXT_PUBLIC_NOCODB_TABLE_ID)');
+  throw new Error('Missing required NOCODB environment variables. Ensure NOCODB_URL, NOCODB_TOKEN, NOCODB_TABLE_ID are set in .env.local');
 }
 
 const NOCODB_BASE_URL: string = _baseUrl;
 const NOCODB_API_TOKEN: string = _token;
 const NOCODB_TABLE_ID: string = _tableId;
 
+const MAX_PAGINATION_ITERATIONS = 20;
+
 export async function fetchPosts(): Promise<Post[]> {
   const url = `${NOCODB_BASE_URL}/api/v2/tables/${NOCODB_TABLE_ID}/records`;
   const allPosts: Post[] = [];
   let offset = 0;
   const limit = 1000;
+  let iterations = 0;
 
   try {
-    while (true) {
+    while (iterations < MAX_PAGINATION_ITERATIONS) {
+      iterations++;
       const response = await fetch(`${url}?limit=${limit}&offset=${offset}`, {
         headers: {
           'xc-token': NOCODB_API_TOKEN,
@@ -29,7 +34,7 @@ export async function fetchPosts(): Promise<Post[]> {
       });
 
       if (!response.ok) {
-        console.error('Failed to fetch posts:', response.statusText);
+        console.error('Failed to fetch posts:', response.status);
         break;
       }
 
@@ -48,7 +53,7 @@ export async function fetchPosts(): Promise<Post[]> {
       offset += limit;
     }
   } catch (error) {
-    console.error('Failed to connect to NocoDB:', error);
+    console.error('Database fetch error');
     return [];
   }
 
