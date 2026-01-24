@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
-import { BarChart3, FileText, Settings, User, Sun, Moon, Menu, X } from 'lucide-react';
+import { BarChart3, FileText, Settings, User, Sun, Moon, Menu, X, Scale } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: BarChart3 },
   { href: '/posts', label: 'Posts', icon: FileText },
+  { href: '/consensus', label: 'Consensus', icon: Scale },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
