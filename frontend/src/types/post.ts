@@ -86,22 +86,22 @@ export const CATEGORIES = [
 export type Category = typeof CATEGORIES[number];
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  'ETF': 'bg-green-500',
-  'Immobilier': 'bg-violet-500',
-  'Crypto': 'bg-orange-500',
-  'Epargne': 'bg-blue-500',
-  'Fiscalite': 'bg-red-500',
-  'Actions': 'bg-cyan-500',
-  'Strategie': 'bg-pink-500',
-  'Milestone': 'bg-yellow-500',
-  'Question': 'bg-indigo-500',
-  'Retour XP': 'bg-teal-500',
-  'Budget': 'bg-lime-500',
-  'Retraite': 'bg-amber-500',
-  'Credit': 'bg-rose-500',
-  'Carriere': 'bg-emerald-500',
-  'Actualite': 'bg-sky-500',
-  'Autre': 'bg-gray-500',
+  'ETF': 'bg-muted text-muted-foreground',
+  'Immobilier': 'bg-muted text-muted-foreground',
+  'Crypto': 'bg-muted text-muted-foreground',
+  'Epargne': 'bg-muted text-muted-foreground',
+  'Fiscalite': 'bg-muted text-muted-foreground',
+  'Actions': 'bg-muted text-muted-foreground',
+  'Strategie': 'bg-muted text-muted-foreground',
+  'Milestone': 'bg-muted text-muted-foreground',
+  'Question': 'bg-muted text-muted-foreground',
+  'Retour XP': 'bg-muted text-muted-foreground',
+  'Budget': 'bg-muted text-muted-foreground',
+  'Retraite': 'bg-muted text-muted-foreground',
+  'Credit': 'bg-muted text-muted-foreground',
+  'Carriere': 'bg-muted text-muted-foreground',
+  'Actualite': 'bg-muted text-muted-foreground',
+  'Autre': 'bg-muted text-muted-foreground',
 };
 
 export const CONSENSUS_COLORS: Record<string, { bg: string; label: string }> = {

@@ -344,10 +344,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                             )}
                           >
                             <div
-                              className={cn(
-                                'w-2 h-2 rounded-full',
-                                CATEGORY_COLORS[category] || 'bg-slate-500'
-                              )}
+                              className="w-2 h-2 rounded-full bg-muted-foreground/50"
                             />
                             {category}
                             <span className="text-xs opacity-60">{count}</span>
@@ -450,11 +447,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <div
-                        className={cn(
-                          'px-2 py-0.5 rounded text-xs font-sans',
-                          CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
-                          'text-white'
-                        )}
+                        className="px-2 py-0.5 rounded text-xs font-sans bg-muted text-muted-foreground"
                       >
                         {post.category}
                       </div>
@@ -533,11 +526,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   {/* List View */}
                   <div className="flex items-center gap-2 shrink-0">
                     <div
-                      className={cn(
-                        'px-2 py-0.5 rounded text-xs font-sans',
-                        CATEGORY_COLORS[post.category || ''] || 'bg-slate-500',
-                        'text-white'
-                      )}
+                      className="px-2 py-0.5 rounded text-xs font-sans bg-muted text-muted-foreground"
                     >
                       {post.category}
                     </div>

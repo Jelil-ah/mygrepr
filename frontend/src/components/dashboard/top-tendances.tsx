@@ -99,7 +99,7 @@ export function TopTendances({ posts, onPostClick, compact = false }: TopTendanc
                   #{index + 1}
                 </span>
                 <Badge
-                  className={`${CATEGORY_COLORS[post.category]} text-white text-xs`}
+                  className="bg-muted text-muted-foreground text-xs"
                 >
                   {post.category}
                 </Badge>

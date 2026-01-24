@@ -3,9 +3,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, getDataFreshness, getPostFreshness, getPostLanguage } from '@/lib/utils';
-import { Post, CATEGORY_COLORS } from '@/types/post';
+import { Post } from '@/types/post';
 import { getETFInsights } from '@/lib/nocodb';
-import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Award, Sparkles, Clock, ExternalLink } from 'lucide-react';
+import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Award, Clock, ExternalLink } from 'lucide-react';
 import { ETFComparison } from '@/components/dashboard/etf-comparison';
 import { DailyDigest } from '@/components/dashboard/daily-digest';
 import { PostDetail } from '@/components/dashboard/post-detail';
@@ -149,17 +149,9 @@ export function DashboardPage({ posts }: DashboardPageProps) {
             Vue d'ensemble des conseils financiers Reddit
           </p>
           {/* Freshness indicator */}
-          <div className={cn(
-            'flex items-center gap-2 mt-2 text-xs',
-            freshness.hoursAgo < 24 ? 'text-green-500' : freshness.hoursAgo < 72 ? 'text-amber-500' : 'text-muted-foreground'
-          )}>
+          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             <span>{freshness.label}</span>
-            {freshness.hoursAgo < 24 && (
-              <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-medium">
-                Frais
-              </span>
-            )}
           </div>
         </div>
 
@@ -197,28 +189,28 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                   <div className="px-4 pb-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-violet-500" />
+                        <FileText className="w-4 h-4 text-muted-foreground" />
                         <div>
                           <p className="text-lg font-bold">{stats.totalPosts}</p>
                           <p className="text-xs text-muted-foreground">Posts analysés</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4 text-muted-foreground" />
                         <div>
                           <p className="text-lg font-bold">{stats.etfMentions}</p>
                           <p className="text-xs text-muted-foreground">Mentionnent ETF</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-yellow-500" />
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
                         <div>
                           <p className="text-lg font-bold">{formatMontant(stats.totalMontant)}</p>
                           <p className="text-xs text-muted-foreground">Montants cités</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ArrowUp className="w-4 h-4 text-blue-500" />
+                        <ArrowUp className="w-4 h-4 text-muted-foreground" />
                         <div>
                           <p className="text-lg font-bold">{stats.avgScore}</p>
                           <p className="text-xs text-muted-foreground">Upvotes moyen</p>
@@ -248,7 +240,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
               className="w-full p-4 flex items-center justify-between hover:bg-accent/30 transition-colors"
             >
               <span className="text-sm font-medium flex items-center gap-2 text-foreground">
-                <TrendingUp className="w-4 h-4 text-green-500" />
+                <TrendingUp className="w-4 h-4 text-muted-foreground" />
                 ETF mentionnés
                 <span className="text-xs text-muted-foreground ml-1">{stats.etfMentions} posts</span>
               </span>
@@ -299,20 +291,19 @@ export function DashboardPage({ posts }: DashboardPageProps) {
         {/* Best Advice Highlight */}
         {dynamicInsights.bestAdvicePost && (
           <div
-            className="p-4 rounded-xl border mb-8 cursor-pointer hover:border-emerald-500/50 transition-colors border-border bg-card"
+            className="p-4 rounded-xl border mb-8 cursor-pointer hover:border-primary/50 transition-colors border-border bg-card"
             onClick={() => handlePostClick(dynamicInsights.bestAdvicePost!)}
           >
             <div className="flex items-start gap-3">
-              <Award className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+              <Award className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs text-emerald-500 uppercase tracking-wide font-medium">Conseil le plus upvoté</span>
+                  <span className="text-xs text-primary uppercase tracking-wide font-medium">Conseil le plus upvoté</span>
                   <span className="text-xs text-muted-foreground">{dynamicInsights.bestAdvicePost.score} upvotes</span>
                 </div>
                 <p className="text-sm font-medium line-clamp-2">{dynamicInsights.bestAdvicePost.key_advice}</p>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-1">— {dynamicInsights.bestAdvicePost.title}</p>
               </div>
-              <Sparkles className="w-4 h-4 text-emerald-500/50 shrink-0" />
             </div>
           </div>
         )}
@@ -376,10 +367,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span
-                          className={cn(
-                            'px-2 py-0.5 rounded text-[10px] font-medium text-white',
-                            CATEGORY_COLORS[post.category] || 'bg-slate-500'
-                          )}
+                          className="px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
                         >
                           {post.category}
                         </span>
@@ -389,7 +377,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                         {(() => {
                           const f = getPostFreshness(post.created_utc, post.created_a);
                           return (
-                            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', f.bgColor, f.color)}>
+                            <span className="text-[10px] text-muted-foreground">
                               {f.label}
                             </span>
                           );

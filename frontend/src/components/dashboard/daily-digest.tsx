@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { cn, getPostLanguage } from '@/lib/utils';
-import { Post, CATEGORY_COLORS } from '@/types/post';
+import { Post } from '@/types/post';
 import { Zap, TrendingUp, Lightbulb, Users } from 'lucide-react';
 
 interface DailyDigestProps {
@@ -146,9 +146,9 @@ export function DailyDigest({ posts, onPostClick }: DailyDigestProps) {
   };
 
   const insightColors = {
-    consensus: 'text-green-500',
-    trending: 'text-violet-500',
-    advice: 'text-amber-500',
+    consensus: 'text-muted-foreground',
+    trending: 'text-muted-foreground',
+    advice: 'text-muted-foreground',
   };
 
   const renderSection = (
@@ -180,10 +180,7 @@ export function DailyDigest({ posts, onPostClick }: DailyDigestProps) {
                       {insight.title}
                     </span>
                     {insight.category && (
-                      <span className={cn(
-                        'px-1.5 py-0.5 rounded text-[10px] font-medium text-white',
-                        CATEGORY_COLORS[insight.category] || 'bg-slate-500'
-                      )}>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground">
                         {insight.category}
                       </span>
                     )}
@@ -203,7 +200,7 @@ export function DailyDigest({ posts, onPostClick }: DailyDigestProps) {
           <div className="mt-3 flex items-center gap-2 flex-wrap">
             <span className="text-xs text-muted-foreground">Sujets :</span>
             {data.topTags.map(tag => (
-              <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary">
+              <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
                 {tag}
               </span>
             ))}
@@ -217,7 +214,7 @@ export function DailyDigest({ posts, onPostClick }: DailyDigestProps) {
     <div className="rounded-xl border border-border bg-card p-5 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-          <Zap className="w-5 h-5 text-amber-500" />
+          <Zap className="w-5 h-5 text-muted-foreground" />
           Brief du jour
         </h3>
         <span className="text-xs text-muted-foreground">{digest.period}</span>

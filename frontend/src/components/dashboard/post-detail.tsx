@@ -174,7 +174,7 @@ export function PostDetail({
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant="outline"
-                  className={`text-xs ${CATEGORY_COLORS[post.category] || 'bg-slate-500'} text-white border-0`}
+                  className="text-xs bg-muted text-muted-foreground border-0"
                 >
                   {post.category}
                 </Badge>
