@@ -31,6 +31,67 @@ export function isPostNew(createdUtc: number | undefined): boolean {
   return diffHours < 24;
 }
 
+// Post freshness levels
+export type FreshnessLevel = 'fresh' | 'recent' | 'old';
+
+export function getPostFreshness(createdUtc: number | undefined, createdA?: string): {
+  level: FreshnessLevel;
+  label: string;
+  color: string;
+  bgColor: string;
+} {
+  // Resolve the date: prefer created_utc, fallback to created_a string
+  let postDate: Date | null = null;
+  if (createdUtc) {
+    postDate = new Date(createdUtc * 1000);
+  } else if (createdA) {
+    postDate = new Date(createdA + 'Z'); // Treat as UTC
+  }
+
+  if (!postDate || isNaN(postDate.getTime())) {
+    return { level: 'old', label: 'Date inconnue', color: 'text-muted-foreground', bgColor: 'bg-muted' };
+  }
+
+  const diffMs = Date.now() - postDate.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  const label = formatDistanceToNow(postDate);
+
+  if (diffDays < 7) {
+    return { level: 'fresh', label, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-500/20' };
+  }
+  if (diffDays < 90) {
+    return { level: 'recent', label, color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-500/20' };
+  }
+  return { level: 'old', label, color: 'text-muted-foreground', bgColor: 'bg-muted' };
+}
+
+// Time period filter
+export type TimePeriod = 'all' | 'week' | 'month' | 'quarter' | 'old';
+
+export function filterByTimePeriod(createdUtc: number | undefined, period: TimePeriod, createdA?: string): boolean {
+  if (period === 'all') return true;
+
+  let postDate: Date | null = null;
+  if (createdUtc) {
+    postDate = new Date(createdUtc * 1000);
+  } else if (createdA) {
+    postDate = new Date(createdA + 'Z');
+  }
+
+  if (!postDate || isNaN(postDate.getTime())) return period === 'old';
+
+  const diffDays = (Date.now() - postDate.getTime()) / (1000 * 60 * 60 * 24);
+
+  switch (period) {
+    case 'week': return diffDays <= 7;
+    case 'month': return diffDays <= 30;
+    case 'quarter': return diffDays <= 90;
+    case 'old': return diffDays > 90;
+    default: return true;
+  }
+}
+
 // French subreddits list
 const FRENCH_SUBREDDITS = ['vosfinances', 'vossous'];
 

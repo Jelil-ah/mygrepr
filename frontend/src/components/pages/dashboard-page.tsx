@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, isPostNew, getDataFreshness } from '@/lib/utils';
+import { cn, getDataFreshness, getPostFreshness } from '@/lib/utils';
 import { Post, CATEGORY_COLORS } from '@/types/post';
 import { getETFInsights } from '@/lib/nocodb';
 import { FileText, TrendingUp, DollarSign, BarChart3, ChevronDown, ArrowUp, MessageSquare, ArrowRight, Heart, Award, Sparkles, Clock, ExternalLink } from 'lucide-react';
@@ -320,12 +320,14 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                         <span className="text-xs text-muted-foreground">
                           r/{post.subreddit}
                         </span>
-                        {isPostNew(post.created_utc) && (
-                          <span className="flex items-center gap-1 text-xs text-amber-500 font-medium">
-                            <Sparkles className="w-3 h-3" />
-                            Nouveau
-                          </span>
-                        )}
+                        {(() => {
+                          const freshness = getPostFreshness(post.created_utc, post.created_a);
+                          return (
+                            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', freshness.bgColor, freshness.color)}>
+                              {freshness.label}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <h4 className="font-medium line-clamp-1 group-hover:text-primary transition-colors pr-8">
                         {post.title}

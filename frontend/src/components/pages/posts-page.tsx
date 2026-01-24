@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, isPostNew, getPostLanguage, getDataFreshness } from '@/lib/utils';
+import { cn, getPostLanguage, getDataFreshness, getPostFreshness, filterByTimePeriod, type TimePeriod } from '@/lib/utils';
 import { Post, CATEGORIES, CATEGORY_COLORS } from '@/types/post';
-import { Search, X, MessageSquare, ArrowUp, Filter, LayoutGrid, List, Clock, Sparkles } from 'lucide-react';
+import { Search, X, MessageSquare, ArrowUp, Filter, LayoutGrid, List, Clock } from 'lucide-react';
 import { PostDetail } from '@/components/dashboard/post-detail';
 
 interface PostsPageProps {
@@ -18,6 +18,7 @@ export function PostsPage({ posts }: PostsPageProps) {
   const [selectedSubreddits, setSelectedSubreddits] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'fr' | 'en'>('all');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [visibleCount, setVisibleCount] = useState(30);
@@ -70,14 +71,16 @@ export function PostsPage({ posts }: PostsPageProps) {
       const matchesLanguage =
         selectedLanguage === 'all' || getPostLanguage(p.subreddit) === selectedLanguage;
 
-      return matchesSearch && matchesCategory && matchesSubreddit && matchesLanguage;
+      const matchesTime = filterByTimePeriod(p.created_utc, selectedTimePeriod, p.created_a);
+
+      return matchesSearch && matchesCategory && matchesSubreddit && matchesLanguage && matchesTime;
     });
-  }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
+  }, [posts, searchQuery, selectedCategories, selectedSubreddits, selectedLanguage, selectedTimePeriod]);
 
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(POSTS_PER_PAGE);
-  }, [searchQuery, selectedCategories, selectedSubreddits, selectedLanguage]);
+  }, [searchQuery, selectedCategories, selectedSubreddits, selectedLanguage, selectedTimePeriod]);
 
   // Progressive loading
   const visiblePosts = useMemo(
@@ -119,10 +122,11 @@ export function PostsPage({ posts }: PostsPageProps) {
     setSelectedCategories([]);
     setSelectedSubreddits([]);
     setSelectedLanguage('all');
+    setSelectedTimePeriod('all');
     setSearchQuery('');
   };
 
-  const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || selectedLanguage !== 'all' || searchQuery;
+  const hasFilters = selectedCategories.length > 0 || selectedSubreddits.length > 0 || selectedLanguage !== 'all' || selectedTimePeriod !== 'all' || searchQuery;
 
   return (
     <motion.main
@@ -263,6 +267,29 @@ export function PostsPage({ posts }: PostsPageProps) {
                 🇬🇧 EN
               </button>
             </div>
+            {/* Time period filter */}
+            <div className="flex rounded-lg overflow-hidden border border-border">
+              {([
+                { value: 'all', label: 'Tout' },
+                { value: 'week', label: '7j' },
+                { value: 'month', label: '30j' },
+                { value: 'quarter', label: '3m' },
+                { value: 'old', label: 'Ancien' },
+              ] as { value: TimePeriod; label: string }[]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setSelectedTimePeriod(value)}
+                  className={cn(
+                    'px-3 py-2 text-xs font-medium',
+                    selectedTimePeriod === value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-muted-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -395,12 +422,14 @@ export function PostsPage({ posts }: PostsPageProps) {
                       >
                         {post.category}
                       </div>
-                      {isPostNew(post.created_utc) && (
-                        <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-sans bg-amber-500 text-white">
-                          <Sparkles className="w-3 h-3" />
-                          Nouveau
-                        </div>
-                      )}
+                      {(() => {
+                        const freshness = getPostFreshness(post.created_utc, post.created_a);
+                        return (
+                          <span className={cn('px-2 py-0.5 rounded text-[10px] font-medium font-sans', freshness.bgColor, freshness.color)}>
+                            {freshness.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <span
                       className={cn(
@@ -468,12 +497,14 @@ export function PostsPage({ posts }: PostsPageProps) {
                     >
                       {post.category}
                     </div>
-                    {isPostNew(post.created_utc) && (
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-sans bg-amber-500 text-white">
-                        <Sparkles className="w-3 h-3" />
-                        New
-                      </div>
-                    )}
+                    {(() => {
+                      const freshness = getPostFreshness(post.created_utc, post.created_a);
+                      return (
+                        <span className={cn('px-2 py-0.5 rounded text-[10px] font-medium font-sans', freshness.bgColor, freshness.color)}>
+                          {freshness.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3
