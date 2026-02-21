@@ -10,10 +10,6 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-DNS-Prefetch-Control', 'on');
   response.headers.set(
-    'Strict-Transport-Security',
-    'max-age=31536000; includeSubDomains'
-  );
-  response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=()'
   );
