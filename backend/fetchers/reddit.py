@@ -1,7 +1,8 @@
 """
-Reddit Fetcher - Uses PRAW (authenticated) with fallback to .json endpoint
+Reddit Fetcher - Uses PRAW (authenticated) with fallback to old.reddit.com session
 """
 import time
+import requests
 from datetime import datetime
 from typing import Generator
 from backend.config import (
@@ -23,10 +24,33 @@ if REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET:
         _reddit.read_only = True
         logger.info("Reddit API: Using PRAW (authenticated)")
     except Exception as e:
-        logger.warning(f"PRAW init failed, falling back to .json endpoint: {e}")
+        logger.warning(f"PRAW init failed, falling back to session: {e}")
         _reddit = None
 else:
-    logger.info("Reddit API: Using .json endpoint (no credentials configured)")
+    logger.info("Reddit API: Using old.reddit.com session (no credentials configured)")
+
+# Persistent session for unauthenticated requests
+_session = None
+
+def _get_session() -> requests.Session:
+    """Get or create a persistent session with Reddit cookies."""
+    global _session
+    if _session is None:
+        _session = requests.Session()
+        _session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+        })
+        # Visit old.reddit.com to get cookies
+        try:
+            resp = _session.get("https://old.reddit.com", timeout=10)
+            logger.info(f"Session initialized (status={resp.status_code}, cookies={len(_session.cookies)})")
+        except Exception as e:
+            logger.warning(f"Failed to initialize session cookies: {e}")
+    return _session
 
 
 def _post_to_dict(post_data: dict, subreddit: str) -> dict:
@@ -93,15 +117,9 @@ def _fetch_praw(subreddit: str, time_filter: str, limit: int, sort: str, min_sco
 
 
 def _fetch_json(subreddit: str, time_filter: str, limit: int, sort: str, min_score: int) -> Generator[dict, None, None]:
-    """Fetch posts using .json endpoint (unauthenticated fallback)."""
-    import requests
-
-    base_url = f"https://www.reddit.com/r/{subreddit}/{sort}/.json"
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-    }
+    """Fetch posts using old.reddit.com .json endpoint with session cookies."""
+    session = _get_session()
+    base_url = f"https://old.reddit.com/r/{subreddit}/{sort}/.json"
     after = None
     total_fetched = 0
 
@@ -116,11 +134,14 @@ def _fetch_json(subreddit: str, time_filter: str, limit: int, sort: str, min_sco
             params["after"] = after
 
         try:
-            response = requests.get(base_url, headers=headers, params=params)
+            response = session.get(base_url, params=params, timeout=15)
             response.raise_for_status()
             data = response.json()
         except requests.RequestException as e:
             logger.error(f"Error fetching r/{subreddit}: {e}")
+            # Reset session on error - might need fresh cookies
+            global _session
+            _session = None
             break
 
         posts = data.get("data", {}).get("children", [])
@@ -186,19 +207,13 @@ def _fetch_top_comment_praw(post_id: str) -> dict | None:
 
 
 def _fetch_top_comment_json(post_id: str, subreddit: str) -> dict | None:
-    """Fetch top comment using .json endpoint."""
-    import requests
-
-    url = f"https://www.reddit.com/r/{subreddit}/comments/{post_id}/.json"
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-    }
+    """Fetch top comment using old.reddit.com .json endpoint."""
+    session = _get_session()
+    url = f"https://old.reddit.com/r/{subreddit}/comments/{post_id}/.json"
     params = {"limit": 1, "sort": "top", "raw_json": 1}
 
     try:
-        response = requests.get(url, headers=headers, params=params)
+        response = session.get(url, params=params, timeout=15)
         response.raise_for_status()
         data = response.json()
 
