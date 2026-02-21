@@ -13,9 +13,9 @@ from backend.db.nocodb import push_posts, get_existing_post_ids
 from backend.config import SUBREDDITS, logger
 
 # Configuration
-POSTS_PER_DAY_PER_SUBREDDIT = 500  # Max posts per subreddit per day
+POSTS_PER_DAY_PER_SUBREDDIT = 50  # Max posts per subreddit per day (limited for free AI tier)
 PROGRESS_FILE = Path(__file__).parent / "scheduler_progress.json"
-AI_DELAY = 2.0  # Seconds between AI API calls (conservative for free tier)
+AI_DELAY = 8.0  # Seconds between AI API calls (Groq free tier: ~30 req/min)
 TARGET_YEARS_BACK = 1  # Fetch posts up to 1 year back (changed from 3)
 
 # Time periods for historical fetch (from newest to oldest)
