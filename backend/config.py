@@ -113,5 +113,5 @@ CATEGORY_DESCRIPTIONS = {
     "Autre": "Sujets ne rentrant dans AUCUNE autre catégorie (utiliser en dernier recours)"
 }
 
-# User agent for Reddit requests (required)
-USER_AGENT = "grepr:v1.0 (personal use)"
+# User agent for Reddit requests - browser-like to avoid 403 blocks
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"

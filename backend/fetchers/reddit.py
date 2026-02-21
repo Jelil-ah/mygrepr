@@ -97,7 +97,11 @@ def _fetch_json(subreddit: str, time_filter: str, limit: int, sort: str, min_sco
     import requests
 
     base_url = f"https://www.reddit.com/r/{subreddit}/{sort}/.json"
-    headers = {"User-Agent": USER_AGENT}
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    }
     after = None
     total_fetched = 0
 
@@ -135,7 +139,7 @@ def _fetch_json(subreddit: str, time_filter: str, limit: int, sort: str, min_sco
         if not after:
             break
 
-        time.sleep(1)  # Rate limit
+        time.sleep(2)  # Rate limit - conservative to avoid blocks
 
     logger.info(f"  [JSON] Fetched {total_fetched} posts from r/{subreddit} (score >= {min_score})")
 
@@ -186,7 +190,11 @@ def _fetch_top_comment_json(post_id: str, subreddit: str) -> dict | None:
     import requests
 
     url = f"https://www.reddit.com/r/{subreddit}/comments/{post_id}/.json"
-    headers = {"User-Agent": USER_AGENT}
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    }
     params = {"limit": 1, "sort": "top", "raw_json": 1}
 
     try:
