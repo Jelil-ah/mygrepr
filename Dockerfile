@@ -10,5 +10,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY scheduler.py .
 
-# Keep container running (cron will execute scheduler.py)
-CMD ["tail", "-f", "/dev/null"]
+# Run scheduler in loop mode (daily at 6:00)
+CMD ["python", "scheduler.py"]
