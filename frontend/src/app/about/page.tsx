@@ -12,7 +12,7 @@ const features = [
   {
     icon: Brain,
     title: 'Analyse IA',
-    description: 'Catégorisation intelligente, résumés et extraction des conseils clés via LLM local.',
+    description: 'Catégorisation intelligente, résumés et extraction des conseils clés via Groq AI.',
     color: 'text-purple-500',
     bg: 'bg-purple-500/10',
   },
@@ -33,13 +33,13 @@ const features = [
 ];
 
 const techStack = [
-  { name: 'Next.js 15', category: 'Frontend' },
+  { name: 'Next.js', category: 'Frontend' },
   { name: 'React 19', category: 'Frontend' },
   { name: 'Tailwind CSS', category: 'Styling' },
   { name: 'Framer Motion', category: 'Animations' },
   { name: 'Python', category: 'Backend' },
-  { name: 'PRAW', category: 'Reddit API' },
-  { name: 'LM Studio', category: 'AI Local' },
+  { name: 'PullPush.io', category: 'Reddit Data' },
+  { name: 'Groq', category: 'AI API' },
   { name: 'NocoDB', category: 'Database' },
 ];
 
@@ -70,7 +70,7 @@ export default function AboutPage() {
               L&apos;objectif est de faciliter la découverte des meilleures pratiques d&apos;investissement, ETF populaires, et stratégies recommandées par la communauté.
             </p>
             <p>
-              Toutes les analyses sont effectuées localement via LM Studio - aucune donnée n&apos;est envoyée vers des services cloud.
+              Les analyses sont effectuées via l&apos;API Groq (LLaMA 3.3 70B) pour la catégorisation et les résumés.
             </p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function AboutPage() {
         {/* Links */}
         <div className="flex flex-wrap gap-4 justify-center">
           <a
-            href="https://github.com/Jelil-ah/grepr"
+            href="https://github.com/Jelil-ah/mygrepr"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 rounded-lg border font-sans text-sm transition-colors border-border hover:border-primary/50 text-muted-foreground"

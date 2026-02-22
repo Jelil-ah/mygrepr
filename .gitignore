@@ -23,6 +23,9 @@ data/
 grepr_output_*.json
 scheduler_progress.json
 
+# Scripts with hardcoded secrets
+import_posts.py
+
 # OS
 .DS_Store
 Thumbs.db
