@@ -10,5 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY scheduler.py .
 
+# Run as non-root user
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
+
 # Run scheduler in loop mode (daily at 6:00)
 CMD ["python", "scheduler.py"]

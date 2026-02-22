@@ -1,0 +1,9 @@
+.env
+.env.*
+venv/
+__pycache__/
+frontend/
+*.log
+.git/
+import_posts.py
+scheduler_progress.json

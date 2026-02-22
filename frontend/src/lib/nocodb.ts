@@ -30,7 +30,7 @@ export async function fetchPosts(): Promise<Post[]> {
         headers: {
           'xc-token': token,
         },
-        cache: 'no-store',
+        next: { revalidate: 300 },
       });
 
       if (!response.ok) {

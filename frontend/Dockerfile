@@ -14,6 +14,10 @@ COPY . .
 # Build the app
 RUN npm run build
 
+# Run as non-root user
+RUN adduser -D appuser && chown -R appuser:appuser /app
+USER appuser
+
 # Expose port
 EXPOSE 3000
 

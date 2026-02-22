@@ -20,8 +20,8 @@ jobs:
             - name: Install dependencies
               run: pip install -r requirements.txt
 
-            - name: Run tests
-              run: echo "TODO - add tests later"
+            - name: Run syntax check
+              run: python -m py_compile backend/config.py backend/db/nocodb.py backend/processors/ai.py backend/fetchers/reddit.py scheduler.py
 
     build-frontend:
         runs-on: ubuntu-latest
@@ -36,9 +36,9 @@ jobs:
             - name: Install & Build
               working-directory: ./frontend
               env:
-                  NEXT_PUBLIC_NOCODB_URL: http://localhost:8080
-                  NEXT_PUBLIC_NOCODB_TABLE_ID: dummy_table_id
-                  NEXT_PUBLIC_NOCODB_TOKEN: dummy_token
+                  NOCODB_URL: http://localhost:8080
+                  NOCODB_TABLE_ID: dummy_table_id
+                  NOCODB_TOKEN: dummy_token
               run: |
                   npm install
                   npm run build

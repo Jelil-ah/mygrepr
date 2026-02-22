@@ -32,7 +32,7 @@ def get_existing_post_ids() -> set:
         params = {"fields": "reddit_id", "limit": page_size, "offset": offset}
 
         try:
-            response = requests.get(url, headers=get_headers(), params=params)
+            response = requests.get(url, headers=get_headers(), params=params, timeout=30)
             response.raise_for_status()
             data = response.json()
 
@@ -108,7 +108,7 @@ def push_post(post: dict) -> bool:
     }
 
     try:
-        response = requests.post(url, headers=get_headers(), json=record)
+        response = requests.post(url, headers=get_headers(), json=record, timeout=30)
         response.raise_for_status()
         return True
     except requests.RequestException as e:

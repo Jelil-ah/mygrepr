@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchPosts } from '@/lib/nocodb';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // Cache for 5 minutes
 
 export async function GET() {
   try {
