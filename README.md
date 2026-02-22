@@ -9,11 +9,11 @@ Built this to stop scrolling Reddit for finance advice and just have it all in o
 1. Scheduler fetches posts daily from 12+ subreddits via PullPush.io
 2. Groq AI (LLaMA 3.3 70B) categorizes each post (ETF, Immobilier, Crypto, etc.)
 3. Everything gets stored in NocoDB
-4. Next.js frontend displays it all — filters, ETF tracker, consensus board
+4. Frontend displays it all — filters, ETF tracker, consensus board
 
 ## Stack
 
-**Frontend** — Next.js, React 19, Tailwind, Framer Motion
+**Frontend** — Coming soon
 **Backend** — Python, Groq API
 **Data** — PullPush.io, NocoDB
 **Deploy** — Docker, Dokploy on Hetzner
@@ -28,12 +28,6 @@ cd mygrepr
 cp .env.example .env   # fill in your keys
 pip install -r requirements.txt
 python scheduler.py dry  # test run
-
-# frontend
-cd frontend
-npm install
-# set NOCODB_URL, NOCODB_TOKEN, NOCODB_TABLE_ID in .env.local
-npm run dev
 ```
 
 ## Scheduler
