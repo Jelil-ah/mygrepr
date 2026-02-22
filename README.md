@@ -9,7 +9,7 @@ Built this to stop scrolling Reddit for finance advice and just have it all in o
 1. Scheduler fetches posts daily from 12+ subreddits via PullPush.io
 2. Groq AI (LLaMA 3.3 70B) categorizes each post (ETF, Immobilier, Crypto, etc.)
 3. Everything gets stored in NocoDB
-4. Frontend displays it all — filters, ETF tracker, consensus board
+4. Frontend coming soon
 
 ## Stack
 
