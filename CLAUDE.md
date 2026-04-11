@@ -50,7 +50,8 @@ docker build -t grepr .      # Backend worker only
 ### Frontend key files
 - `src/app/` — App Router pages (`force-dynamic` on all main pages)
 - `src/lib/i18n.ts` — Custom i18n (FR/EN, no library), `Record<Locale, Record<string, string>>`, `t(key, locale, params?)`
-- `src/lib/design-tokens.ts` — `CATEGORY_TAG_COLORS`, `getCategoryColor()`
+- `src/lib/design-tokens.ts` — `SOURCE_COLORS`, `CATEGORY_COLORS`, `getCategoryColor()`, `getSourceColor()`, `getSourceBarColor()`
+- `src/components/eyebrow.tsx` — Shared `<Eyebrow>` component (label, as tag, className), 11px stone, aria-hidden decorative line
 - `src/components/language-provider.tsx` — React context, localStorage `grepr-lang`, defaults FR
 - `src/types/post.ts` — `Post`, `ExtractedData`, `CATEGORIES`, `CATEGORY_COLORS`, `formatAmount`
 - **Path alias**: `@/*` → `src/*`
@@ -98,7 +99,7 @@ docker build -t grepr .      # Backend worker only
 - **Warm border / hover / divider**: `var(--warm-border)`, `var(--warm-hover)`, `var(--warm-divider)`
 - **Seam**: `h-px bg-indigo-600/40` + "DONNÉES" eyebrow
 - **Typography**: Inter only (500/600/700), JetBrains Mono for ISIN/tickers/numbers only
-- **Eyebrow pattern**: `text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500` + `h-px w-12 bg-indigo-600/40`
+- **Eyebrow pattern**: `<Eyebrow>` from `components/eyebrow.tsx` — `text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500` + `h-px w-12 bg-indigo-600/40 aria-hidden`
 - **Source tags**: `getSourceColor(name)` from `lib/design-tokens.ts` — 13 sub palette + fallback
 - **Category pills**: `getCategoryColor(cat)` from `lib/design-tokens.ts`
 - **Meta**: dot-separated `tabular-nums`
@@ -137,12 +138,21 @@ AI_PROVIDER  # groq | deepseek
 
 ## Active Branch
 
-`redesign/saas-finadaily` — SaaS redesign with Auth.js + editorial/cockpit hybrid design. Main: `main`.
+`main` — Audit fix sprint shipped 2026-04-11 (commit `9d90cf8`, 20 files, +545/-307). Vibes-v2 editorial/cockpit design system shipped 2026-04-08. Auth.js v5 Google OAuth active. Dokploy auto-deploys on push to main.
+
+## A11y / Landmark Architecture
+
+- `layout.tsx` owns `<main id="main-content">` — all pages use `<div>`, never `<main>`
+- Skip-nav link as first body child (`<a href="#main-content">`)
+- `document.documentElement.lang` synced on mount + locale change
+- All decorative Lucide icons have `aria-hidden="true"`
+- ETF table rows are keyboard-navigable (`tabIndex={0}`, `onKeyDown` Enter/Space)
+- All filter toggles have `aria-pressed`
+- `<SourceBar>` has `role="img"` + dynamic `aria-label`
 
 ## Known Issues
 
 - Middleware deprecation warning (Next.js 16 wants `proxy.ts`)
-- Mobile nav has no open/close animation
 - `onPostClick` prop chain through `ETFComparison` → `ETFDetailDialog` is a no-op
 
 ## Verification Checklist
@@ -160,4 +170,6 @@ npm run build                       # Full build
 - **NocoDB pagination**: 1000 records/request max. Client fetches server-side.
 - **`force-dynamic`** on all main pages — no static rendering.
 - **`about/page.tsx`** is client component (uses `useLanguage()` hook).
+- **`not-found.tsx`**, **`error.tsx`**, **`posts/error.tsx`** are client components (use `useLanguage()`).
+- **`login/page.tsx`** handles `?error=` param for auth error display.
 - **Screenshots** organized by folder: `screenshots/<site-name>/`.
