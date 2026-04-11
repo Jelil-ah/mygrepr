@@ -43,29 +43,32 @@ export interface ETFInsight {
   sentiment: 'positive' | 'neutral' | 'mixed';
 }
 
+// Pre-compiled ETF patterns (module-level, compiled once)
+const ETF_PATTERNS = ETF_DATABASE.map(etfInfo => ({
+  etfInfo,
+  patterns: [etfInfo.ticker.toLowerCase(), ...etfInfo.keywords].map(keyword =>
+    new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+  ),
+}));
+
 export function getETFInsights(posts: Post[]): ETFInsight[] {
   const etfData: Record<string, { posts: Post[]; totalScore: number; etfInfo: ETFInfo }> = {};
-
-  // Pre-compile word-boundary regex patterns once
-  const etfPatterns = ETF_DATABASE.map(etfInfo => ({
-    etfInfo,
-    patterns: [etfInfo.ticker.toLowerCase(), ...etfInfo.keywords].map(keyword =>
-      new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-    ),
-  }));
+  const seenIds: Record<string, Set<number>> = {};
 
   posts.forEach(post => {
     const searchText = `${post.title} ${post.tags || ''} ${post.summary || ''}`.toLowerCase();
 
-    etfPatterns.forEach(({ etfInfo, patterns }) => {
+    ETF_PATTERNS.forEach(({ etfInfo, patterns }) => {
       const matches = patterns.some(pattern => pattern.test(searchText));
 
       if (matches) {
         const key = etfInfo.ticker;
         if (!etfData[key]) {
           etfData[key] = { posts: [], totalScore: 0, etfInfo };
+          seenIds[key] = new Set();
         }
-        if (!etfData[key].posts.find(p => p.Id === post.Id)) {
+        if (!seenIds[key].has(post.Id)) {
+          seenIds[key].add(post.Id);
           etfData[key].posts.push(post);
           etfData[key].totalScore += post.score || 0;
         }

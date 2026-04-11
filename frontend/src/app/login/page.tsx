@@ -4,28 +4,31 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Compass } from "lucide-react";
 import { Suspense } from "react";
+import { useLanguage } from "@/components/language-provider";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const error = searchParams.get("error");
+  const { t } = useLanguage();
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--editorial-bg)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-4">
-            <Compass className="w-6 h-6 text-primary-foreground" />
+          <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center mb-4">
+            <Compass className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold">Grepr</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Intelligence financiere Reddit
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
+            {t('login.subtitle')}
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-6">
+        <div className="bg-[var(--paper-bg)] border border-[var(--warm-border)] rounded-sm p-6">
           <button
             onClick={() => signIn("google", { callbackUrl })}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-border bg-background text-sm font-medium hover:bg-muted transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-[var(--warm-border)] bg-[var(--paper-bg)] text-sm font-medium hover:bg-[var(--warm-hover)] transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -45,15 +48,21 @@ function LoginForm() {
                 fill="#EA4335"
               />
             </svg>
-            Continuer avec Google
+            {t('login.google')}
           </button>
 
-          <p className="text-[11px] text-muted-foreground text-center mt-4">
+          {error && (
+            <p className="text-sm text-rose-500 text-center mt-3">
+              {error === 'Configuration' ? t('login.error_config') : t('login.error')}
+            </p>
+          )}
+
+          <p className="text-[11px] text-stone-500 dark:text-stone-400 text-center mt-4">
             En continuant, vous acceptez nos conditions d&apos;utilisation.
           </p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -61,9 +70,9 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-background flex items-center justify-center">
-          <div className="animate-pulse w-12 h-12 rounded-xl bg-muted" />
-        </main>
+        <div className="min-h-screen bg-[var(--editorial-bg)] flex items-center justify-center">
+          <div className="animate-pulse w-12 h-12 rounded-xl bg-[var(--warm-hover)]" />
+        </div>
       }
     >
       <LoginForm />

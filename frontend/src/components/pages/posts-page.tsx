@@ -5,7 +5,8 @@ import { cn, getPostLanguage, getPostQualityScore, getConfidenceScore, filterByT
 import { Post, CATEGORIES, CONSENSUS_COLORS } from '@/types/post';
 import { Search, ArrowUpRight, X, TrendingUp } from 'lucide-react';
 import { getLastVisit, updateLastVisit } from '@/lib/last-visit';
-import { getSourceColor } from '@/lib/design-tokens';
+import { getSourceColor, getCategoryColor } from '@/lib/design-tokens';
+import { Eyebrow } from '@/components/eyebrow';
 import Link from 'next/link';
 import { useLanguage } from '@/components/language-provider';
 
@@ -24,17 +25,6 @@ function getPostDate(post: Post): Date | null {
   return null;
 }
 
-// Reusable eyebrow lockup — matches design-system.md pattern
-function Eyebrow({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-        {label}
-      </span>
-      <div className="h-px w-12 bg-indigo-600/40" />
-    </div>
-  );
-}
 
 export function PostsPage({ posts }: PostsPageProps) {
   const { locale, t } = useLanguage();
@@ -169,8 +159,9 @@ export function PostsPage({ posts }: PostsPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--editorial-bg)] text-foreground selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
+    <div className="min-h-screen bg-[var(--editorial-bg)] text-foreground selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-6">{t('posts.page_title')}</h1>
         <div className="flex gap-8">
 
           {/* Sidebar — warm editorial system */}
@@ -185,6 +176,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <button
                       key={value}
                       onClick={() => setSelectedTimePeriod(value)}
+                      aria-pressed={selectedTimePeriod === value}
                       className={cn(
                         'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wide border-b-2 transition-all cursor-pointer',
                         selectedTimePeriod === value
@@ -206,6 +198,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                     <button
                       key={value}
                       onClick={() => setSelectedLanguage(value)}
+                      aria-pressed={selectedLanguage === value}
                       className={cn(
                         'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wide border-b-2 transition-all cursor-pointer',
                         selectedLanguage === value
@@ -229,6 +222,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                       <button
                         key={category}
                         onClick={() => toggleCategory(category)}
+                        aria-pressed={selectedCategories.includes(category)}
                         className={cn(
                           'w-full flex items-center gap-2 px-2 py-1 rounded-sm text-xs transition-colors',
                           checked
@@ -260,6 +254,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                       <button
                         key={subreddit}
                         onClick={() => toggleSubreddit(subreddit)}
+                        aria-pressed={selectedSubreddits.includes(subreddit)}
                         className={cn(
                           'w-full flex items-center gap-2 px-2 py-1 rounded-sm text-xs transition-colors',
                           checked
@@ -300,18 +295,20 @@ export function PostsPage({ posts }: PostsPageProps) {
             <div className="relative mb-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
               <input
-                type="text"
+                type="search"
                 placeholder={t('posts.search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label={t('posts.search_label')}
                 className="w-full pl-10 pr-9 py-2.5 rounded-sm border border-[var(--warm-border)] text-sm bg-[var(--paper-bg)] text-foreground placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
+                  aria-label={t('posts.clear_search')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -342,6 +339,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   <button
                     key={value}
                     onClick={() => setSortBy(value)}
+                    aria-pressed={sortBy === value}
                     className={cn(
                       'px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer border-b-2',
                       sortBy === value
@@ -353,8 +351,8 @@ export function PostsPage({ posts }: PostsPageProps) {
                   </button>
                 ))}
               </div>
-              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 tabular-nums">
-                {filteredPosts.length} posts
+              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 tabular-nums" role="status" aria-live="polite">
+                {t('posts.filter_count', { count: filteredPosts.length })}
               </span>
             </div>
 
@@ -386,6 +384,7 @@ export function PostsPage({ posts }: PostsPageProps) {
                   <Link
                     key={post.Id}
                     href={`/posts/${post.reddit_id}`}
+                    aria-label={post.title}
                     className="group flex items-center justify-between py-4 px-2 -mx-2 transition-all duration-200 hover:bg-[var(--warm-hover)]"
                   >
                     <div className="flex items-start gap-4 min-w-0 flex-1">
@@ -395,23 +394,33 @@ export function PostsPage({ posts }: PostsPageProps) {
                       )}>
                         r/{post.subreddit}
                       </div>
+                      <span className={cn(
+                        'flex sm:hidden shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded-sm',
+                        sourceClass
+                      )}>
+                        r/{post.subreddit?.slice(0, 4)}
+                      </span>
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
                         <div className="flex items-center gap-3 min-w-0">
                           {post.category && (
-                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase">
+                            <span className={cn(
+                              'text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase',
+                              getCategoryColor(post.category)
+                            )}>
                               {post.category}
                             </span>
                           )}
                           {post.consensus && CONSENSUS_COLORS[post.consensus.toLowerCase()] && (
                             <span
-                              title={`Consensus: ${CONSENSUS_COLORS[post.consensus.toLowerCase()].label}`}
+                              role="img"
+                              aria-label={`Consensus: ${CONSENSUS_COLORS[post.consensus.toLowerCase()].label}`}
                               className={cn(
                                 'h-1.5 w-1.5 rounded-full shrink-0',
                                 CONSENSUS_COLORS[post.consensus.toLowerCase()].bg
                               )}
                             />
                           )}
-                          <h2 className="text-base md:text-[17px] font-bold text-foreground leading-tight transition-colors group-hover:text-indigo-900 dark:group-hover:text-indigo-300 truncate">
+                          <h2 className="text-base md:text-[17px] font-bold text-foreground leading-tight transition-colors group-hover:text-indigo-900 dark:group-hover:text-indigo-300 line-clamp-2 md:truncate">
                             {post.title}
                           </h2>
                         </div>
@@ -466,7 +475,7 @@ export function PostsPage({ posts }: PostsPageProps) {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -509,6 +518,8 @@ function MobileFilters({
     <div className="lg:hidden mb-4">
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-controls="mobile-filter-panel"
         className={cn(
           'flex items-center gap-2 px-4 py-2 rounded-sm border text-[10px] font-bold uppercase tracking-[0.15em] transition-colors w-full justify-center',
           open
@@ -523,7 +534,7 @@ function MobileFilters({
       </button>
 
       {open && (
-        <div className="mt-3 p-4 rounded-sm border border-[var(--warm-border)] bg-[var(--paper-bg)] space-y-5">
+        <div id="mobile-filter-panel" className="mt-3 p-4 rounded-sm border border-[var(--warm-border)] bg-[var(--paper-bg)] space-y-5">
           {/* Period */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{t('posts.period')}</span>
@@ -532,6 +543,7 @@ function MobileFilters({
                 <button
                   key={value}
                   onClick={() => setSelectedTimePeriod(value)}
+                  aria-pressed={selectedTimePeriod === value}
                   className={cn(
                     'px-2.5 py-1 text-[10px] font-bold uppercase rounded-sm border transition-all',
                     selectedTimePeriod === value
@@ -553,6 +565,7 @@ function MobileFilters({
                 <button
                   key={value}
                   onClick={() => setSelectedLanguage(value)}
+                  aria-pressed={selectedLanguage === value}
                   className={cn(
                     'px-2.5 py-1 text-[10px] font-bold uppercase rounded-sm border transition-all',
                     selectedLanguage === value
@@ -574,6 +587,7 @@ function MobileFilters({
                 <button
                   key={category}
                   onClick={() => toggleCategory(category)}
+                  aria-pressed={selectedCategories.includes(category)}
                   className={cn(
                     'px-2.5 py-1 text-[10px] font-bold uppercase rounded-sm border transition-all',
                     selectedCategories.includes(category)
@@ -595,6 +609,7 @@ function MobileFilters({
                 <button
                   key={subreddit}
                   onClick={() => toggleSubreddit(subreddit)}
+                  aria-pressed={selectedSubreddits.includes(subreddit)}
                   className={cn(
                     'px-2.5 py-1 text-[10px] font-bold uppercase rounded-sm border transition-all',
                     selectedSubreddits.includes(subreddit)

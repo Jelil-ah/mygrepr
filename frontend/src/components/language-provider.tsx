@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useCallback, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { type Locale, t as translate } from '@/lib/i18n';
 
 interface LanguageContextValue {
@@ -35,6 +35,10 @@ function getServerSnapshot(): Locale {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const locale = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {
     localStorage.setItem(STORAGE_KEY, l);

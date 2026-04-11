@@ -35,7 +35,11 @@ export function SourceBar({ slices, label = 'Discuté dans', className }: Source
       </div>
 
       {/* Stacked proportional bar */}
-      <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-white/10">
+      <div
+        className="flex h-1.5 w-full overflow-hidden rounded-full bg-slate-200/60 dark:bg-white/10"
+        role="img"
+        aria-label={`Distribution: ${slices.map(s => `r/${s.source} ${s.pct}%`).join(', ')}`}
+      >
         {slices.map((slice) => (
           <div
             key={slice.source}

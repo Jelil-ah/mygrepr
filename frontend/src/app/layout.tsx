@@ -66,6 +66,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-[var(--editorial-bg)] text-foreground`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-sm focus:text-sm focus:font-bold"
+        >
+          Skip to content
+        </a>
         <AuthSessionProvider>
           <LanguageProvider>
             <ThemeProvider
@@ -75,9 +81,9 @@ export default function RootLayout({
               disableTransitionOnChange={false}
             >
               <Navigation />
-              <div className="relative z-10 min-h-screen pb-12">
+              <main id="main-content" className="relative z-10 min-h-screen pb-12">
                 {children}
-              </div>
+              </main>
               <MinimalFooter />
             </ThemeProvider>
           </LanguageProvider>

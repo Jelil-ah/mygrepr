@@ -145,6 +145,60 @@ const translations: Record<Locale, Record<string, string>> = {
     'utils.confidence_high': 'Fiable',
     'utils.confidence_medium': 'Modere',
     'utils.confidence_low': 'Faible',
+
+    // Email gate
+    'gate.title': 'Accede a Grepr',
+    'gate.subtitle': 'Entre ton email pour continuer',
+    'gate.placeholder': 'ton@email.com',
+    'gate.submit': 'Continuer',
+    'gate.loading': 'Envoi...',
+    'gate.error_invalid': 'Email invalide',
+    'gate.error_generic': 'Erreur. Reessaie.',
+    'gate.privacy': 'On utilise ton email uniquement pour te tenir au courant.',
+
+    // Accessibility
+    'a11y.skip_nav': 'Aller au contenu principal',
+
+    // Dashboard
+    'dashboard.value_prop': 'Intelligence financiere par IA, extraite des communautes Reddit francophones et anglophones.',
+
+    // ETF
+    'etf.legend': 'Legende',
+    'etf.dialog_description': 'Details et statistiques de l\'ETF selectionne',
+    'etf.copy_ticker': 'Copier le ticker',
+    'etf.table_caption': 'Classement des ETF par nombre de mentions Reddit',
+
+    // Login
+    'login.title': 'Connexion',
+    'login.subtitle': 'Connectez-vous pour acceder a Grepr',
+    'login.google': 'Continuer avec Google',
+    'login.error': 'Erreur d\'authentification. Veuillez reessayer.',
+    'login.error_config': 'Erreur de configuration. Contactez l\'administrateur.',
+
+    // 404
+    'notfound.title': 'Page introuvable',
+    'notfound.description': 'La page que vous cherchez n\'existe pas ou a ete deplacee.',
+    'notfound.back': 'Retour a l\'accueil',
+
+    // Error
+    'error.title': 'Une erreur est survenue',
+    'error.description': 'Quelque chose s\'est mal passe. Veuillez reessayer.',
+    'error.retry': 'Reessayer',
+
+    // Posts
+    'posts.page_title': 'Explorer les posts',
+    'posts.search_label': 'Rechercher des posts',
+    'posts.clear_search': 'Effacer la recherche',
+    'posts.filter_count': '{count} posts affiches',
+    'posts.period_filter': 'Filtrer par periode',
+    'posts.language_filter': 'Filtrer par langue',
+    'posts.sort_filter': 'Trier les resultats',
+    'posts.category_filter': 'Filtrer par categorie',
+    'posts.source_filter': 'Filtrer par source',
+
+    // Article
+    'article.sidebar': 'Informations du post',
+    'article.related_title': 'Posts similaires',
   },
   en: {
     // Navigation
@@ -290,6 +344,60 @@ const translations: Record<Locale, Record<string, string>> = {
     'utils.confidence_high': 'Reliable',
     'utils.confidence_medium': 'Moderate',
     'utils.confidence_low': 'Low',
+
+    // Email gate
+    'gate.title': 'Access Grepr',
+    'gate.subtitle': 'Enter your email to continue',
+    'gate.placeholder': 'you@email.com',
+    'gate.submit': 'Continue',
+    'gate.loading': 'Sending...',
+    'gate.error_invalid': 'Invalid email',
+    'gate.error_generic': 'Error. Try again.',
+    'gate.privacy': 'We only use your email to keep you posted.',
+
+    // Accessibility
+    'a11y.skip_nav': 'Skip to main content',
+
+    // Dashboard
+    'dashboard.value_prop': 'AI-powered financial intelligence from French and English Reddit communities.',
+
+    // ETF
+    'etf.legend': 'Legend',
+    'etf.dialog_description': 'Details and statistics for the selected ETF',
+    'etf.copy_ticker': 'Copy ticker',
+    'etf.table_caption': 'ETF ranking by Reddit mention count',
+
+    // Login
+    'login.title': 'Log in',
+    'login.subtitle': 'Sign in to access Grepr',
+    'login.google': 'Continue with Google',
+    'login.error': 'Authentication error. Please try again.',
+    'login.error_config': 'Configuration error. Contact the administrator.',
+
+    // 404
+    'notfound.title': 'Page not found',
+    'notfound.description': 'The page you are looking for does not exist or has been moved.',
+    'notfound.back': 'Back to home',
+
+    // Error
+    'error.title': 'Something went wrong',
+    'error.description': 'An error occurred. Please try again.',
+    'error.retry': 'Try again',
+
+    // Posts
+    'posts.page_title': 'Explore posts',
+    'posts.search_label': 'Search posts',
+    'posts.clear_search': 'Clear search',
+    'posts.filter_count': '{count} posts shown',
+    'posts.period_filter': 'Filter by period',
+    'posts.language_filter': 'Filter by language',
+    'posts.sort_filter': 'Sort results',
+    'posts.category_filter': 'Filter by category',
+    'posts.source_filter': 'Filter by source',
+
+    // Article
+    'article.sidebar': 'Post information',
+    'article.related_title': 'Similar posts',
   },
 };
 

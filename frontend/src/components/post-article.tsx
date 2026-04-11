@@ -8,21 +8,11 @@ import { ArrowLeft, ExternalLink, ArrowUp, MessageSquare, Clock, Share2, Check, 
 import Link from 'next/link';
 import { cn, getPostFreshness } from '@/lib/utils';
 import { useLanguage } from '@/components/language-provider';
+import { Eyebrow } from '@/components/eyebrow';
 
 interface PostArticleProps {
   post: Post;
   relatedPosts: Post[];
-}
-
-function Eyebrow({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-        {label}
-      </span>
-      <div className="h-px w-12 bg-indigo-600/40" />
-    </div>
-  );
 }
 
 export function PostArticle({ post, relatedPosts }: PostArticleProps) {
@@ -63,7 +53,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
     : t('article.consensus_divise');
 
   return (
-    <main className="min-h-screen bg-[var(--editorial-bg)] font-sans text-stone-900 dark:text-stone-100 selection:bg-indigo-100">
+    <div className="min-h-screen bg-[var(--editorial-bg)] font-sans text-stone-900 dark:text-stone-100 selection:bg-indigo-100">
       <div className="max-w-6xl mx-auto px-6 py-10">
         <Link
           href="/posts"
@@ -130,7 +120,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* AI Summary */}
             {post.summary && (
               <section className="mb-10">
-                <Eyebrow label={t('article.ai_summary')} />
+                <Eyebrow label={t('article.ai_summary')} className="mb-4" />
                 <div className="bg-[var(--paper-bg)] border border-[var(--warm-border)] p-6 rounded-sm">
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -165,56 +155,56 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* Financial Data */}
             {hasFinancialData && (
               <section className="mb-10">
-                <Eyebrow label={t('article.financial_data')} />
-                <div className="grid grid-cols-2 gap-3">
+                <Eyebrow label={t('article.financial_data')} className="mb-4" />
+                <dl className="grid grid-cols-2 gap-3">
                   {post.patrimoine && (
                     <div className="p-4 border border-[var(--warm-border)] bg-[var(--paper-bg)] rounded-sm">
-                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
+                      <dt className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
                         {t('article.patrimoine')}
-                      </p>
-                      <p className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
+                      </dt>
+                      <dd className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
                         {formatAmount(post.patrimoine)}
-                      </p>
+                      </dd>
                     </div>
                   )}
                   {post.revenus_annuels && (
                     <div className="p-4 border border-[var(--warm-border)] bg-[var(--paper-bg)] rounded-sm">
-                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
+                      <dt className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
                         {t('article.annual_income')}
-                      </p>
-                      <p className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
+                      </dt>
+                      <dd className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
                         {formatAmount(post.revenus_annuels)}
-                      </p>
+                      </dd>
                     </div>
                   )}
                   {post.age_auteur && (
                     <div className="p-4 border border-[var(--warm-border)] bg-[var(--paper-bg)] rounded-sm">
-                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
+                      <dt className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
                         {t('article.age')}
-                      </p>
-                      <p className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
+                      </dt>
+                      <dd className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
                         {post.age_auteur} {t('article.years')}
-                      </p>
+                      </dd>
                     </div>
                   )}
                   {post.montant_max && (
                     <div className="p-4 border border-[var(--warm-border)] bg-[var(--paper-bg)] rounded-sm">
-                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
+                      <dt className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1 font-bold">
                         {t('article.max_amount')}
-                      </p>
-                      <p className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
+                      </dt>
+                      <dd className="text-xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100">
                         {formatAmount(post.montant_max)}
-                      </p>
+                      </dd>
                     </div>
                   )}
-                </div>
+                </dl>
               </section>
             )}
 
             {/* Original Content */}
             {post.selftext && (
               <section className="mb-10">
-                <Eyebrow label={t('article.original_content')} />
+                <Eyebrow label={t('article.original_content')} className="mb-4" />
                 <div className="border border-[var(--warm-border)] bg-[var(--paper-bg)] p-6 rounded-sm">
                   <p className="text-sm leading-relaxed whitespace-pre-wrap text-stone-700 dark:text-stone-300">
                     {post.selftext}
@@ -226,7 +216,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* Top Comment */}
             {post.top_comment && (
               <section className="mb-10">
-                <Eyebrow label={t('article.top_comment')} />
+                <Eyebrow label={t('article.top_comment')} className="mb-4" />
                 <blockquote className="text-base leading-relaxed italic border-l-2 border-indigo-600/40 pl-5 py-2 text-stone-700 dark:text-stone-300">
                   &ldquo;{post.top_comment}&rdquo;
                   {post.comment_score && (
@@ -262,10 +252,10 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
           </article>
 
           {/* Sidebar */}
-          <aside className="w-full lg:w-72 lg:shrink-0 space-y-8">
+          <aside className="w-full lg:w-72 lg:shrink-0 space-y-8" aria-label={t('article.sidebar')}>
             {/* Stats card */}
             <section className="bg-[var(--paper-bg)] border border-[var(--warm-border)] p-5 rounded-sm">
-              <Eyebrow label={t('article.stats')} />
+              <Eyebrow label={t('article.stats')} className="mb-4" />
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
@@ -299,7 +289,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* Tags */}
             {(tags.length > 0 || post.category) && (
               <section>
-                <Eyebrow label={t('article.tags')} />
+                <Eyebrow label={t('article.tags')} className="mb-4" />
                 <div className="flex flex-wrap gap-1.5">
                   {post.category && (
                     <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm tracking-wide uppercase">
@@ -321,7 +311,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* ETF Detected */}
             {post.etf_detected && post.etf_detected.length > 0 && (
               <section>
-                <Eyebrow label={t('article.etfs_mentioned')} />
+                <Eyebrow label={t('article.etfs_mentioned')} className="mb-4" />
                 <div className="flex flex-wrap gap-1.5">
                   {post.etf_detected.map((etf) => (
                     <Link
@@ -339,7 +329,7 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
               <section>
-                <Eyebrow label={t('article.similar')} />
+                <Eyebrow label={t('article.related_title')} as="h4" className="mb-4" />
                 <div className="divide-y divide-[var(--warm-divider)] border-t border-[var(--warm-divider)]">
                   {relatedPosts.map((related) => {
                     const rf = getPostFreshness(related.created_utc, related.created_a, locale);
@@ -364,6 +354,6 @@ export function PostArticle({ post, relatedPosts }: PostArticleProps) {
           </aside>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

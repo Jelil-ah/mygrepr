@@ -73,9 +73,10 @@ function SortHeader({
     align === 'right' ? 'justify-end text-right' :
     align === 'center' ? 'justify-center text-center' : 'text-left';
   return (
-    <th className={cn('py-3 px-4 group', className)}>
+    <th className={cn('py-3 px-4 group', className)} aria-sort={isActive ? (activeDir === 'asc' ? 'ascending' : 'descending') : undefined} scope="col">
       <button
         onClick={() => onSort(columnKey)}
+        aria-label={`Sort by ${label}`}
         className={cn(
           'flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors w-full',
           alignClass,
@@ -227,11 +228,12 @@ export function ETFPage({ posts }: ETFPageProps) {
               <p className="text-sm text-stone-500 dark:text-stone-400 max-w-xl mb-4">
                 {t('etf.subtitle')}
               </p>
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="group" aria-label={t('etf.ranking')}>
                 {filters.map((f) => (
                   <button
                     key={f.value}
                     onClick={() => setFilter(f.value)}
+                    aria-pressed={filter === f.value}
                     className={cn(
                       'px-3 py-1 text-xs font-medium rounded transition-all',
                       filter === f.value
@@ -280,6 +282,7 @@ export function ETFPage({ posts }: ETFPageProps) {
         <div className="mt-6 border border-[var(--warm-border)] bg-[var(--paper-bg)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
+              <caption className="sr-only">{t('etf.table_caption')}</caption>
               <thead>
                 <tr className="border-b border-[var(--warm-border)] bg-[var(--warm-divider)]/60">
                   <SortHeader label={t('etf.col_rank')} columnKey="rank" activeKey={sortKey} activeDir={sortDir} onSort={handleSort} className="w-12 pl-6" />
@@ -289,10 +292,10 @@ export function ETFPage({ posts }: ETFPageProps) {
                   <SortHeader label={t('etf.col_sentiment')} columnKey="sentiment" activeKey={sortKey} activeDir={sortDir} onSort={handleSort} align="center" />
                   <SortHeader label={t('etf.col_ter')} columnKey="ter" activeKey={sortKey} activeDir={sortDir} onSort={handleSort} align="center" />
                   <SortHeader label={t('etf.col_eligible')} columnKey="eligible" activeKey={sortKey} activeDir={sortDir} onSort={handleSort} align="center" />
-                  <th className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 hidden md:table-cell">
+                  <th scope="col" className="py-3 px-4 text-left text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 hidden md:table-cell">
                     {t('etf.col_isin')}
                   </th>
-                  <th className="py-3 px-4 pr-6 text-center text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 w-10">
+                  <th scope="col" className="py-3 px-4 pr-6 text-center text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 w-10">
                     {t('etf.col_link')}
                   </th>
                 </tr>
@@ -302,7 +305,9 @@ export function ETFPage({ posts }: ETFPageProps) {
                   <tr
                     key={etf.ticker}
                     onClick={() => setSelectedETF(etf)}
-                    className="group hover:bg-[var(--warm-hover)] transition-colors cursor-pointer"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedETF(etf); } }}
+                    tabIndex={0}
+                    className="group hover:bg-[var(--warm-hover)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-inset"
                   >
                     {/* Rank */}
                     <td className="py-2.5 px-6 font-mono text-xs text-stone-400 dark:text-stone-500 tabular-nums">
@@ -380,7 +385,7 @@ export function ETFPage({ posts }: ETFPageProps) {
                         <button
                           onClick={(e) => copyISIN(e, etf.isin)}
                           className="p-1 rounded hover:bg-[var(--warm-divider)] transition-colors"
-                          title={t('etf.copy_isin')}
+                          aria-label={t('etf.copy_isin')}
                         >
                           {copiedISIN === etf.isin ? (
                             <Check className="w-3 h-3 text-emerald-500" />
@@ -399,7 +404,7 @@ export function ETFPage({ posts }: ETFPageProps) {
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="inline-flex p-1 rounded hover:bg-[var(--warm-divider)] transition-colors"
-                        title={t('etf.view_justetf')}
+                        aria-label={t('etf.view_justetf')}
                       >
                         <ExternalLink className="w-3 h-3 text-stone-400 dark:text-stone-500" />
                       </a>
@@ -422,7 +427,7 @@ export function ETFPage({ posts }: ETFPageProps) {
               <div className="flex items-center gap-1.5 opacity-60">
                 <Filter className="h-3 w-3 text-stone-500 dark:text-stone-400" />
                 <span className="text-[10px] font-medium text-stone-500 dark:text-stone-400 tracking-wide uppercase">
-                  Légende
+                  {t('etf.legend')}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">

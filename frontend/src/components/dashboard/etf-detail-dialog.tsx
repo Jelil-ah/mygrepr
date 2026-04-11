@@ -5,9 +5,11 @@ import { Post } from '@/types/post';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useLanguage } from '@/components/language-provider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,6 +48,7 @@ function formatDate(dateStr: string | undefined): string {
 
 export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDialogProps) {
   const [copiedISIN, setCopiedISIN] = useState(false);
+  const { t } = useLanguage();
 
   if (!etf) return null;
 
@@ -68,6 +71,7 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
               <div className="flex items-center gap-2">
                   {isPopular && <Star className="h-4 w-4 text-amber-400 fill-amber-400" />}
                   <DialogTitle className="text-xl">{etf.ticker}</DialogTitle>
+                  <DialogDescription className="sr-only">{t('etf.dialog_description')}</DialogDescription>
                   <Badge
                     className={`text-xs ${
                       etf.eligible === 'PEA'
@@ -78,12 +82,12 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
                     {etf.eligible}
                   </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">{etf.name}</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400">{etf.name}</p>
             </DialogHeader>
 
             {/* Info compacte en ligne */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm mb-4">
-              <span className="text-muted-foreground">
+              <span className="text-stone-500 dark:text-stone-400">
                 {etf.provider}
               </span>
               <span className={`font-mono ${
@@ -92,29 +96,29 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
               }`}>
                 {etf.ter}
               </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
+              <span className="flex items-center gap-1 text-stone-500 dark:text-stone-400">
                 <TrendingUp className="h-3 w-3" />
                 {etf.mentions} mentions
               </span>
             </div>
 
             {/* ISIN copiable */}
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-accent/50 mb-4">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--warm-hover)] mb-4">
               <code className="text-xs font-mono flex-1">{etf.isin}</code>
               <button
                 onClick={copyISIN}
-                className="p-1.5 hover:bg-background rounded transition-colors"
+                className="p-1.5 hover:bg-[var(--paper-bg)] rounded transition-colors"
               >
                 {copiedISIN ? (
                   <Check className="h-3.5 w-3.5 text-emerald-400" />
                 ) : (
-                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Copy className="h-3.5 w-3.5 text-stone-400 dark:text-stone-500" />
                 )}
               </button>
             </div>
 
             {/* Description courte */}
-            <p className="text-sm text-muted-foreground mb-4">{etf.description}</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">{etf.description}</p>
 
             {/* Liens */}
             <div className="flex gap-2 mb-6">
@@ -122,7 +126,7 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
                 href={`https://www.justetf.com/fr/find-etf.html?query=${etf.isin}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:opacity-90 rounded-lg transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 justETF
@@ -131,7 +135,7 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
                 href={`https://www.google.com/search?q=${encodeURIComponent(etf.ticker + ' ETF')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-2 text-sm bg-accent hover:bg-accent/80 rounded-lg transition-colors"
+                className="px-3 py-2 text-sm bg-[var(--warm-hover)] hover:bg-[var(--warm-hover)] rounded-lg transition-colors"
               >
                 Google
               </a>
@@ -140,7 +144,7 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
             <Separator className="mb-4" />
 
             {/* Posts Reddit - liste simple */}
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+            <h3 className="text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-3">
               Posts ({etf.posts.length})
             </h3>
 
@@ -152,18 +156,18 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
                     onPostClick(post);
                     onClose();
                   }}
-                  className="w-full text-left p-3 rounded-lg hover:bg-accent/50 transition-colors group"
+                  className="w-full text-left p-3 rounded-lg hover:bg-[var(--warm-hover)] transition-colors group"
                 >
                   <div className="flex items-start gap-2">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+                    <span className="text-xs text-stone-400 dark:text-stone-500 flex items-center gap-1 shrink-0">
                       <ArrowUpRight className="h-3 w-3" />
                       {post.score}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                      <p className="text-sm line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {post.title}
                       </p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-stone-400 dark:text-stone-500">
                         <span>r/{post.subreddit}</span>
                         <span>•</span>
                         <span>{formatDate(post.created_a)}</span>
@@ -181,7 +185,7 @@ export function ETFDetailDialog({ etf, open, onClose, onPostClick }: ETFDetailDi
               ))}
 
               {etf.posts.length > 8 && (
-                <p className="text-xs text-muted-foreground text-center py-2">
+                <p className="text-xs text-stone-400 dark:text-stone-500 text-center py-2">
                   + {etf.posts.length - 8} autres
                 </p>
               )}

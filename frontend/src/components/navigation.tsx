@@ -87,7 +87,7 @@ export function Navigation() {
             className="hover:text-indigo-600 transition-colors cursor-pointer"
             aria-label={t('nav.toggle_theme')}
           >
-            {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {isDark ? <Sun className="w-3.5 h-3.5" aria-hidden="true" /> : <Moon className="w-3.5 h-3.5" aria-hidden="true" />}
           </button>
 
           {/* Auth */}
@@ -107,7 +107,7 @@ export function Navigation() {
                 className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
                 aria-label={t('nav.logout')}
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             </div>
           ) : mounted ? (
@@ -125,68 +125,76 @@ export function Navigation() {
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="md:hidden text-foreground hover:text-indigo-600 transition-colors"
           aria-label={isMobileMenuOpen ? t('nav.close_menu') : t('nav.open_menu')}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-nav-drawer"
         >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {isMobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
         </button>
       </div>
 
       {/* Mobile drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-[var(--editorial-border)] bg-[var(--editorial-bg)]">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
-            {NAV_KEYS.map((item) => {
-              const isActive =
-                item.href === '/'
-                  ? pathname === '/'
-                  : pathname === item.href || pathname?.startsWith(item.href + '/');
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    'text-[11px] font-bold uppercase tracking-[0.15em] transition-colors',
-                    isActive ? 'text-indigo-600' : 'text-slate-600 dark:text-slate-300'
-                  )}
-                >
-                  {t(item.key)}
-                </Link>
-              );
-            })}
-            <div className="flex items-center gap-5 pt-3 border-t border-[var(--editorial-border)] text-[10px] font-medium tracking-widest uppercase text-[var(--editorial-muted)] dark:text-slate-400">
-              <button
-                onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-                className="font-bold hover:text-indigo-600"
+      <div
+        id="mobile-nav-drawer"
+        className={cn(
+          'md:hidden border-t border-[var(--editorial-border)] bg-[var(--editorial-bg)] overflow-hidden transition-all duration-200 ease-in-out',
+          isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        )}
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
+          {NAV_KEYS.map((item) => {
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname?.startsWith(item.href + '/');
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  'text-[11px] font-bold uppercase tracking-[0.15em] transition-colors',
+                  isActive ? 'text-indigo-600' : 'text-slate-600 dark:text-slate-300'
+                )}
               >
-                {locale === 'fr' ? 'EN' : 'FR'}
-              </button>
+                {t(item.key)}
+              </Link>
+            );
+          })}
+          <div className="flex items-center gap-5 pt-3 border-t border-[var(--editorial-border)] text-[10px] font-medium tracking-widest uppercase text-[var(--editorial-muted)] dark:text-slate-400">
+            <button
+              onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
+              className="font-bold hover:text-indigo-600"
+              aria-label={locale === 'fr' ? 'Switch to English' : 'Passer en francais'}
+            >
+              {locale === 'fr' ? 'EN' : 'FR'}
+            </button>
+            <button
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="hover:text-indigo-600"
+              aria-label={t('nav.toggle_theme')}
+            >
+              {isDark ? <Sun className="w-3.5 h-3.5" aria-hidden="true" /> : <Moon className="w-3.5 h-3.5" aria-hidden="true" />}
+            </button>
+            {mounted && session?.user ? (
               <button
-                onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                className="hover:text-indigo-600"
-                aria-label={t('nav.toggle_theme')}
+                onClick={() => signOut()}
+                className="flex items-center gap-1 hover:text-indigo-600 normal-case tracking-normal"
               >
-                {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+                {t('nav.logout')}
               </button>
-              {mounted && session?.user ? (
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center gap-1 hover:text-indigo-600 normal-case tracking-normal"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  {t('nav.logout')}
-                </button>
-              ) : mounted ? (
-                <Link
-                  href="/login"
-                  className="hover:text-indigo-600 normal-case tracking-normal"
-                >
-                  {t('nav.login')}
-                </Link>
-              ) : null}
-            </div>
+            ) : mounted ? (
+              <Link
+                href="/login"
+                className="hover:text-indigo-600 normal-case tracking-normal"
+              >
+                {t('nav.login')}
+              </Link>
+            ) : null}
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

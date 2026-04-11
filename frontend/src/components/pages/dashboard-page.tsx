@@ -7,23 +7,13 @@ import { getETFInsights } from '@/lib/etf-data';
 import { Check, TrendingUp, TrendingDown } from 'lucide-react';
 import { getLastVisit, updateLastVisit, isNewSinceLastVisit } from '@/lib/last-visit';
 import Link from 'next/link';
-import { getSourceColor } from '@/lib/design-tokens';
+import { getSourceColor, getCategoryColor } from '@/lib/design-tokens';
 import { SourceBar, type SourceSlice } from '@/components/source-bar';
 import { useLanguage } from '@/components/language-provider';
+import { Eyebrow } from '@/components/eyebrow';
 
 interface DashboardPageProps {
   posts: Post[];
-}
-
-function Eyebrow({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-        {label}
-      </span>
-      <div className="h-px w-12 bg-indigo-600/40" />
-    </div>
-  );
 }
 
 export function DashboardPage({ posts }: DashboardPageProps) {
@@ -136,7 +126,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
   return (
     <div className="font-sans text-stone-900 dark:text-stone-100 selection:bg-indigo-100">
       {/* ═══ EDITORIAL TOP HALF ═══ */}
-      <section className="bg-[var(--editorial-bg)]">
+      <section className="bg-[var(--editorial-bg)]" aria-label={t('dashboard.featured')}>
         {/* Condensed masthead */}
         <div className="max-w-6xl mx-auto px-6 pt-12 pb-8 border-b border-[var(--editorial-border)]">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -144,6 +134,9 @@ export function DashboardPage({ posts }: DashboardPageProps) {
               <h1 className="text-4xl md:text-5xl font-bold tracking-tighter leading-[0.9] mb-3 text-stone-900 dark:text-stone-100">
                 Grepr
               </h1>
+              <p className="text-sm text-stone-500 dark:text-stone-400 max-w-xl mt-2">
+                {t('dashboard.value_prop')}
+              </p>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-stone-900 dark:text-stone-100 capitalize">
                   {today}
@@ -192,7 +185,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
         {/* Hero featured post */}
         {featured && (
           <div className="max-w-6xl mx-auto px-6 py-10 border-b border-[var(--editorial-border)]">
-            <Eyebrow label={t('dashboard.featured')} />
+            <Eyebrow label={t('dashboard.featured')} className="mb-4" />
             <Link
               href={`/posts/${featured.reddit_id}`}
               className="group flex flex-col md:flex-row gap-6 md:gap-8"
@@ -208,11 +201,11 @@ export function DashboardPage({ posts }: DashboardPageProps) {
               <div className="flex flex-col gap-3 flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
                   {featured.category && (
-                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase">
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase', getCategoryColor(featured.category))}>
                       {featured.category}
                     </span>
                   )}
-                  <span className="text-[10px] font-medium text-stone-400 dark:text-stone-500 tabular-nums font-mono">
+                  <span className="text-[10px] font-medium text-stone-600 dark:text-stone-400 tabular-nums font-mono">
                     {featured.score} · {featured.num_comments || 0} · {getPostFreshness(featured.created_utc, featured.created_a, locale).label}
                   </span>
                 </div>
@@ -237,7 +230,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
         {/* Wire strip: latest posts */}
         <div className="max-w-6xl mx-auto px-6 py-10">
           <div className="flex items-center justify-between mb-4">
-            <Eyebrow label={t('dashboard.latest_posts')} />
+            <Eyebrow label={t('dashboard.latest_posts')} className="mb-4" />
             <Link
               href="/posts"
               className="text-[10px] font-bold uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-4"
@@ -266,7 +259,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
                       <div className="flex items-center gap-3 min-w-0">
                         {post.category && (
-                          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase">
+                          <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none shrink-0 tracking-wide uppercase', getCategoryColor(post.category))}>
                             {post.category}
                           </span>
                         )}
@@ -281,7 +274,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
                       )}
                     </div>
                   </div>
-                  <div className="text-[10px] font-medium text-stone-400 dark:text-stone-500 tabular-nums font-mono whitespace-nowrap shrink-0 pl-4">
+                  <div className="text-[10px] font-medium text-stone-600 dark:text-stone-400 tabular-nums font-mono whitespace-nowrap shrink-0 pl-4">
                     {post.score} · {post.num_comments || 0} · {pf.label}
                   </div>
                 </Link>
@@ -295,10 +288,10 @@ export function DashboardPage({ posts }: DashboardPageProps) {
       <div className="w-full h-px bg-indigo-600/40" />
 
       {/* ═══ COCKPIT BOTTOM HALF ═══ */}
-      <section className="bg-[var(--cockpit-bg)]">
+      <section className="bg-[var(--cockpit-bg)]" aria-label={t('dashboard.section_data')}>
         {/* Eyebrow + stats strip */}
         <div className="max-w-6xl mx-auto px-6 pt-10 pb-8 border-b border-[var(--warm-border)]">
-          <Eyebrow label={t('dashboard.section_data')} />
+          <Eyebrow label={t('dashboard.section_data')} className="mb-4" />
           <div className="flex items-stretch gap-6 divide-x divide-[var(--warm-border)]">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">
@@ -333,7 +326,7 @@ export function DashboardPage({ posts }: DashboardPageProps) {
         {/* ETF snapshot — top 5 */}
         <div className="max-w-6xl mx-auto px-6 py-10">
           <div className="flex items-center justify-between mb-4">
-            <Eyebrow label={t('dashboard.top_etfs')} />
+            <Eyebrow label={t('dashboard.top_etfs')} className="mb-4" />
             <Link
               href="/etf"
               className="text-[10px] font-bold uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-4"
@@ -346,11 +339,11 @@ export function DashboardPage({ posts }: DashboardPageProps) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-[var(--warm-border)] bg-[var(--warm-divider)]/60">
-                  <th className="py-3 px-6 w-12 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">#</th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('etf.col_ticker')}</th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('etf.col_provider')}</th>
-                  <th className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">PEA</th>
-                  <th className="py-3 px-4 pr-6 text-right text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-6 w-12 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">#</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('etf.col_ticker')}</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">{t('etf.col_provider')}</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">PEA</th>
+                  <th scope="col" className="py-3 px-4 pr-6 text-right text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
                     {t('etf.col_mentions')}
                   </th>
                 </tr>
