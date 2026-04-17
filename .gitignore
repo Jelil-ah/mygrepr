@@ -48,3 +48,7 @@ screenshots/
 panda-sidebar.yml
 upstract-nav.yml
 SHOWCASE.md
+
+# Local-only (not tracked on GitHub)
+.claude/
+CLAUDE.md
